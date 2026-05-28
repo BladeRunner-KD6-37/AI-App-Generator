@@ -9,6 +9,8 @@ import { authenticate, requireRole } from "../middleware/auth.middleware";
 import { validateBody } from "../middleware/validate.middleware";
 import { AppError } from "../middleware/errorHandler";
 
+export const runtimeRouters = new Map<string, Router>();
+
 const router = Router();
 
 // ── All config routes require authentication ──────────────────
