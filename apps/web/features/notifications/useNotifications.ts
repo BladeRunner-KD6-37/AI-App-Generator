@@ -13,23 +13,21 @@ interface NotificationsResponse {
 export default function useNotifications() {
   const queryClient = useQueryClient();
 
-  const notificationQuery = useQuery<NotificationsResponse>(
-    ["notifications"],
-    getNotifications,
-    {
-      refetchInterval: 30_000,
-      staleTime: 30_000,
-      select: (data) => ({
-        notifications: Array.isArray((data as NotificationsResponse)?.notifications)
-          ? (data as NotificationsResponse).notifications
-          : [],
-        unreadCount:
-          typeof (data as NotificationsResponse)?.unreadCount === "number"
-            ? (data as NotificationsResponse).unreadCount
-            : 0,
-      }),
-    },
-  );
+  const notificationQuery = useQuery<NotificationsResponse>({
+    queryKey: ["notifications"],
+    queryFn: getNotifications,
+    refetchInterval: 30_000,
+    staleTime: 30_000,
+    select: (data) => ({
+      notifications: Array.isArray((data as NotificationsResponse)?.notifications)
+        ? (data as NotificationsResponse).notifications
+        : [],
+      unreadCount:
+        typeof (data as NotificationsResponse)?.unreadCount === "number"
+          ? (data as NotificationsResponse).unreadCount
+          : 0,
+    }),
+  });
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => markNotificationRead(id),

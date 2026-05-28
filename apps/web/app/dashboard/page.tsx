@@ -53,7 +53,9 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const appsQuery = useQuery(["apps"], getApps, {
+  const appsQuery = useQuery({
+    queryKey: ["apps"],
+    queryFn: getApps,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
   });

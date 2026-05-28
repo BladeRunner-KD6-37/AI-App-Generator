@@ -18,7 +18,7 @@ export async function apiRequest<T = unknown>(
     "Content-Type": "application/json",
   };
 
-  const mergedHeaders: HeadersInit = {
+  let mergedHeaders: HeadersInit = {
     ...defaultHeaders,
     ...(options.headers as Record<string, string> | undefined),
   };
