@@ -70,7 +70,7 @@ const WorkflowActionSchema = z
       "webhook",
       "db_write",
     ]),
-    config: z.record(z.unknown()).default({}),
+    config: z.record(z.string(), z.unknown()).default({}),
   })
   .passthrough();
 
@@ -95,7 +95,7 @@ const AuthSchema = z
     providers: z.array(z.string()).default(["credentials"]),
     roles: z.array(z.string()).default(["user", "admin"]),
   })
-  .default({});
+  .default({ providers: ["credentials"], roles: ["user", "admin"] });
 
 // ── Root app config schema ────────────────────────────────────
 const AppConfigSchema = z
