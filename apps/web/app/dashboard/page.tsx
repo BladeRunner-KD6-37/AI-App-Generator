@@ -20,18 +20,71 @@ function slugify(value: string): string {
 
 const exampleConfig = JSON.stringify(
   {
-    name: "Example entity",
+    name: "Simple CRM",
     entities: [
       {
-        name: "Item",
+        name: "Customer",
+        fields: [
+          { name: "name", type: "string", required: true },
+          { name: "email", type: "email", required: true, unique: true },
+          { name: "phone", type: "string" },
+          { name: "status", type: "string", defaultValue: "active" },
+          { name: "notes", type: "text" },
+        ],
+      },
+      {
+        name: "Deal",
         fields: [
           { name: "title", type: "string", required: true },
-          { name: "published", type: "boolean" },
+          { name: "value", type: "number", required: true },
+          { name: "stage", type: "string", defaultValue: "prospecting" },
+          { name: "customerId", type: "relation", relation: { entity: "Customer", type: "many-to-one" } },
         ],
       },
     ],
-    pages: [],
-    workflows: [],
+    pages: [
+      {
+        name: "Dashboard",
+        slug: "dashboard",
+        components: [
+          { type: "stat-card", entity: "Customer", title: "Customers" },
+          { type: "stat-card", entity: "Deal", title: "Deals" },
+        ],
+      },
+      {
+        name: "Customers",
+        slug: "customers",
+        components: [
+          { type: "table", entity: "Customer", fields: ["name", "email", "phone", "status"] },
+          { type: "form", entity: "Customer" },
+        ],
+      },
+      {
+        name: "Deals",
+        slug: "deals",
+        components: [
+          { type: "table", entity: "Deal", fields: ["title", "value", "stage", "customerId"] },
+          { type: "form", entity: "Deal" },
+        ],
+      },
+    ],
+    workflows: [
+      {
+        name: "Notify on new customer",
+        trigger: "on_create",
+        entity: "Customer",
+        condition: "data.status === 'active'",
+        actions: [
+          {
+            type: "send_notification",
+            config: {
+              title: "New Customer",
+              message: "A new customer was added",
+            },
+          },
+        ],
+      },
+    ],
     auth: { providers: ["credentials"], roles: ["user", "admin"] },
   },
   null,
@@ -72,7 +125,7 @@ export default function DashboardPage() {
       return createApp({ name, slug, config: parsedConfig });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["apps"]);
+      queryClient.invalidateQueries({ queryKey: ["apps"] });
       setShowForm(false);
       setName("");
       setSlug("");
@@ -197,10 +250,10 @@ export default function DashboardPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createMutation.isLoading}
+                  disabled={createMutation.isPending}
                   className="inline-flex h-12 items-center justify-center rounded-full bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
-                  {createMutation.isLoading ? "Creating app..." : "Create app"}
+                  {createMutation.isPending ? "Creating app..." : "Create app"}
                 </button>
               </div>
             </form>

@@ -120,7 +120,7 @@ export function deleteApp(slug: string): Promise<unknown> {
 }
 
 export function getRuntimeData(slug: string, entity: string): Promise<unknown> {
-  return apiRequest(`/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity)}`);
+  return apiRequest(`/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity.toLowerCase())}`);
 }
 
 export function createRuntimeRecord(
@@ -128,7 +128,7 @@ export function createRuntimeRecord(
   entity: string,
   data: object,
 ): Promise<unknown> {
-  return apiRequest(`/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity)}`, {
+  return apiRequest(`/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity.toLowerCase())}`, {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -141,7 +141,7 @@ export function updateRuntimeRecord(
   data: object,
 ): Promise<unknown> {
   return apiRequest(
-    `/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity)}/${encodeURIComponent(id)}`,
+    `/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity.toLowerCase())}/${encodeURIComponent(id)}`,
     {
       method: "PUT",
       body: JSON.stringify(data),
@@ -155,7 +155,7 @@ export function deleteRuntimeRecord(
   id: string,
 ): Promise<unknown> {
   return apiRequest(
-    `/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity)}/${encodeURIComponent(id)}`,
+    `/api/runtime/${encodeURIComponent(slug)}/${encodeURIComponent(entity.toLowerCase())}/${encodeURIComponent(id)}`,
     {
       method: "DELETE",
     },

@@ -24,27 +24,25 @@ function PageComponentRenderer({ component, config, appSlug }: PageComponentProp
   const queryKey = ["runtime", appSlug, entityName];
   const [editingRow, setEditingRow] = useState<Record<string, unknown> | null>(null);
 
-  const runtimeQuery = useQuery<Record<string, unknown>[] | unknown>(
+  const runtimeQuery = useQuery({
     queryKey,
-    () => getRuntimeData(appSlug, entityName),
-    {
-      enabled: Boolean(entityName),
-      staleTime: 60_000,
-      refetchOnWindowFocus: false,
-    },
-  );
+    queryFn: () => getRuntimeData(appSlug, entityName),
+    enabled: Boolean(entityName),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
 
   const rows = Array.isArray(runtimeQuery.data) ? runtimeQuery.data : [];
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => deleteRuntimeRecord(appSlug, entityName, id),
-    onSuccess: () => queryClient.invalidateQueries(queryKey),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) =>
       createRuntimeRecord(appSlug, entityName, data),
-    onSuccess: () => queryClient.invalidateQueries(queryKey),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   try {
@@ -102,7 +100,7 @@ function PageComponentRenderer({ component, config, appSlug }: PageComponentProp
           onSubmit={async (data: Record<string, unknown>) => {
             await createMutation.mutateAsync(data);
           }}
-          isLoading={createMutation.isLoading}
+          isLoading={createMutation.isPending}
           title={component.title ?? `Create ${entity.name}`}
         />
       );

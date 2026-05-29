@@ -15,7 +15,10 @@ export default function useNotifications() {
 
   const notificationQuery = useQuery<NotificationsResponse>({
     queryKey: ["notifications"],
-    queryFn: getNotifications,
+    queryFn: async () => {
+      const data = await getNotifications();
+      return data as NotificationsResponse;
+    },
     refetchInterval: 30_000,
     staleTime: 30_000,
     select: (data) => ({
@@ -32,14 +35,14 @@ export default function useNotifications() {
   const markReadMutation = useMutation({
     mutationFn: (id: string) => markNotificationRead(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: () => markAllNotificationsRead(),
     onSuccess: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 

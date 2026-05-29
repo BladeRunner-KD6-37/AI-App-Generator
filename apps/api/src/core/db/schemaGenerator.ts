@@ -131,21 +131,20 @@ export async function dynamicCreate(
   const sanitizedTable = sanitizeIdentifier(tableName);
 
   const id = generateCuid();
-  const now = new Date().toISOString();
 
   const allData = {
     id,
     ...data,
-    createdAt: now,
-    updatedAt: now,
   };
 
   const columns = Object.keys(allData)
     .map((k) => `"${k}"`)
+    .concat(['"createdAt"', '"updatedAt"'])
     .join(", ");
 
   const placeholders = Object.keys(allData)
     .map((_, i) => `$${i + 1}`)
+    .concat(["NOW()", "NOW()"])
     .join(", ");
 
   const values = Object.values(allData);
@@ -155,6 +154,7 @@ export async function dynamicCreate(
       `INSERT INTO "${sanitizedTable}" (${columns}) VALUES (${placeholders})`,
       ...values
     );
+    const now = new Date();
     return { id, ...data, createdAt: now, updatedAt: now };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -168,14 +168,13 @@ export async function dynamicUpdate(
   data: Record<string, unknown>
 ): Promise<unknown> {
   const sanitizedTable = sanitizeIdentifier(tableName);
-  const now = new Date().toISOString();
 
-  const updateData = { ...data, updatedAt: now };
-  const setClauses = Object.keys(updateData)
+  const setClauses = Object.keys(data)
     .map((k, i) => `"${k}" = $${i + 1}`)
+    .concat([`"updatedAt" = NOW()`])
     .join(", ");
 
-  const values = [...Object.values(updateData), id];
+  const values = [...Object.values(data), id];
 
   try {
     await prisma.$executeRawUnsafe(

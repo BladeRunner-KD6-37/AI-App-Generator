@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -12,14 +12,14 @@ import NotificationBell from "../../../features/notifications/NotificationBell";
 import type { PageDef } from "../../../core/config/types";
 
 interface AppPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default function AppPage({ params }: AppPageProps) {
   const router = useRouter();
-  const { slug } = params;
+  const { slug } = use(params);
   const [activePage, setActivePage] = useState<PageDef | null>(null);
 
   useEffect(() => {
