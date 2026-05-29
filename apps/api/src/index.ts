@@ -8,6 +8,7 @@ import authRouter from "./routes/auth.routes";
 import configRouter, { runtimeRouters } from "./routes/config.routes";
 import runtimeRouter from "./routes/runtime.routes";
 import notificationRouter from "./routes/notification.routes";
+import githubExportRouter from "./routes/githubExport.routes";
 import { notFoundHandler, globalErrorHandler } from "./middleware/errorHandler";
 import prisma from "./core/db/prisma";
 import { buildRuntimeRouter } from "./core/api-factory/routeBuilder";
@@ -32,6 +33,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/config", configRouter);
 app.use("/api/runtime", runtimeRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/export", githubExportRouter);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

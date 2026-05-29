@@ -1,6 +1,6 @@
-import { AppConfig, EntityDef, PageDef } from "./types";
+import { AppConfig, EntityDef, PageDef, FieldType, ComponentType, FieldDef } from "./types";
 
-const DefaultAuthConfig = {
+const DefaultAuthConfig: AppConfig["auth"] = {
   providers: ["credentials"],
   roles: ["user", "admin"],
 };
@@ -29,17 +29,7 @@ function parseEntities(raw: unknown): EntityDef[] {
       fields: Array.isArray(item.fields)
         ? item.fields.filter(isObject).map((field) => ({
             name: typeof field.name === "string" ? field.name : "",
-            type:
-              field.type === "string" ||
-              field.type === "number" ||
-              field.type === "boolean" ||
-              field.type === "date" ||
-              field.type === "relation" ||
-              field.type === "email" ||
-              field.type === "password" ||
-              field.type === "text"
-                ? field.type
-                : "string",
+            type: isFieldType(field.type) ? field.type : "string",
             required: typeof field.required === "boolean" ? field.required : undefined,
             unique: typeof field.unique === "boolean" ? field.unique : undefined,
             defaultValue: field.defaultValue,
@@ -49,12 +39,7 @@ function parseEntities(raw: unknown): EntityDef[] {
                     typeof field.relation.entity === "string"
                       ? field.relation.entity
                       : "",
-                  type:
-                    field.relation.type === "one-to-many" ||
-                    field.relation.type === "many-to-one" ||
-                    field.relation.type === "many-to-many"
-                      ? field.relation.type
-                      : "one-to-many",
+                  type: isRelationType(field.relation.type) ? field.relation.type : "one-to-many",
                 }
               : undefined,
           }))
@@ -77,14 +62,7 @@ function parsePages(raw: unknown): PageDef[] {
       icon: typeof item.icon === "string" ? item.icon : undefined,
       components: Array.isArray(item.components)
         ? item.components.filter(isObject).map((component) => ({
-            type:
-              component.type === "table" ||
-              component.type === "form" ||
-              component.type === "stat-card" ||
-              component.type === "chart" ||
-              component.type === "detail-view"
-                ? component.type
-                : "table",
+            type: isComponentType(component.type) ? component.type : "table",
             entity: typeof component.entity === "string" ? component.entity : "",
             title: typeof component.title === "string" ? component.title : undefined,
             fields: Array.isArray(component.fields)
@@ -151,6 +129,33 @@ export function parseConfig(raw: unknown): AppConfig {
     workflows: parseWorkflows(raw.workflows),
     auth: parseAuth(raw.auth),
   };
+}
+
+function isFieldType(value: unknown): value is FieldType {
+  return (
+    value === "string" ||
+    value === "number" ||
+    value === "boolean" ||
+    value === "date" ||
+    value === "relation" ||
+    value === "email" ||
+    value === "password" ||
+    value === "text"
+  );
+}
+
+function isComponentType(value: unknown): value is ComponentType {
+  return (
+    value === "table" ||
+    value === "form" ||
+    value === "stat-card" ||
+    value === "chart" ||
+    value === "detail-view"
+  );
+}
+
+function isRelationType(value: unknown): value is NonNullable<FieldDef["relation"]>["type"] {
+  return value === "one-to-many" || value === "many-to-one" || value === "many-to-many";
 }
 
 export function getEntityByName(config: AppConfig, name: string): EntityDef | null {

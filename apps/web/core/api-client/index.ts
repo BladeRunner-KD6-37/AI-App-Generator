@@ -69,6 +69,30 @@ export interface AppConfigPayload {
   config: object;
 }
 
+export interface GitHubExportRequest {
+  appSlug: string;
+  repositoryName: string;
+  isPrivate: boolean;
+  githubToken: string;
+}
+
+export type GitHubExportState = "queued" | "running" | "completed" | "failed";
+
+export interface GitHubExportStatus {
+  jobId: string;
+  appSlug: string;
+  repositoryName: string;
+  isPrivate: boolean;
+  state: GitHubExportState;
+  progress: number;
+  message: string;
+  repositoryUrl?: string;
+  cloneUrl?: string;
+  error?: string;
+  startedAt: string;
+  updatedAt: string;
+}
+
 export function login(email: string, password: string): Promise<AuthResponse> {
   return apiRequest<AuthResponse>("/api/auth/login", {
     method: "POST",
@@ -176,4 +200,15 @@ export function markAllNotificationsRead(): Promise<unknown> {
   return apiRequest("/api/notifications/read-all", {
     method: "PATCH",
   });
+}
+
+export function exportAppToGitHub(data: GitHubExportRequest): Promise<GitHubExportStatus> {
+  return apiRequest("/api/export/github", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function getGitHubExportStatus(jobId: string): Promise<GitHubExportStatus> {
+  return apiRequest(`/api/export/github/status?jobId=${encodeURIComponent(jobId)}`);
 }
