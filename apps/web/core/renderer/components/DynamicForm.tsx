@@ -35,6 +35,10 @@ function getInitialValue(field: FieldDef, initialData?: Record<string, unknown>)
     return raw;
   }
 
+  if (field.type === "datetime" && typeof raw === "string") {
+    return raw;
+  }
+
   if (field.type === "number" && typeof raw === "number") {
     return raw;
   }
@@ -212,6 +216,10 @@ export default function DynamicForm({
                       ? "number"
                       : field.type === "date"
                       ? "date"
+                      : field.type === "datetime"
+                      ? "datetime-local"
+                      : field.type === "image"
+                      ? "url"
                       : "text"
                   }
                 />

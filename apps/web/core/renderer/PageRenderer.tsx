@@ -107,10 +107,12 @@ function PageComponentRenderer({ component, config, appSlug }: PageComponentProp
     }
 
     if (component.type === "stat-card") {
+      const value = entityName ? rows.length : config.pages.length;
+
       return (
         <Component
           title={component.title ?? entityName}
-          value={rows.length}
+          value={value}
           isLoading={runtimeQuery.isLoading}
         />
       );

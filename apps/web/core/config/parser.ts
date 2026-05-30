@@ -13,8 +13,47 @@ const defaultAppConfig: AppConfig = {
   auth: DefaultAuthConfig,
 };
 
+function getStarterPages(): AppConfig["pages"] {
+  return [
+    {
+      name: "Overview",
+      slug: "overview",
+      components: [
+        {
+          type: "stat-card",
+          entity: "",
+          title: "Pages configured",
+        },
+      ],
+      roles: ["user", "admin"],
+    },
+  ];
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function normalizeFieldType(type: unknown): FieldType {
+  if (type === "datetime") {
+    return "date";
+  }
+
+  if (type === "image") {
+    return "string";
+  }
+
+  return isFieldType(type) ? type : "string";
 }
 
 function parseEntities(raw: unknown): EntityDef[] {
@@ -29,7 +68,7 @@ function parseEntities(raw: unknown): EntityDef[] {
       fields: Array.isArray(item.fields)
         ? item.fields.filter(isObject).map((field) => ({
             name: typeof field.name === "string" ? field.name : "",
-            type: isFieldType(field.type) ? field.type : "string",
+            type: normalizeFieldType(field.type),
             required: typeof field.required === "boolean" ? field.required : undefined,
             unique: typeof field.unique === "boolean" ? field.unique : undefined,
             defaultValue: field.defaultValue,
@@ -47,6 +86,116 @@ function parseEntities(raw: unknown): EntityDef[] {
       timestamps: typeof item.timestamps === "boolean" ? item.timestamps : undefined,
     }))
     .filter((entity) => entity.name.length > 0);
+}
+
+  const normalizeEntities = parseEntities;
+
+function normalizePages(raw: unknown): PageDef[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return raw
+    .filter(isObject)
+    .map((item) => {
+      if (Array.isArray(item.components)) {
+        return {
+          name: typeof item.name === "string" ? item.name : "",
+          slug:
+            typeof item.slug === "string" && item.slug.length > 0
+              ? item.slug
+              : slugify(typeof item.name === "string" ? item.name : "page"),
+          icon: typeof item.icon === "string" ? item.icon : undefined,
+          components: item.components.filter(isObject).map((component) => ({
+            type: isComponentType(component.type) ? component.type : "table",
+            entity: typeof component.entity === "string" ? component.entity : "",
+            title: typeof component.title === "string" ? component.title : undefined,
+            fields: Array.isArray(component.fields)
+              ? component.fields.filter((field): field is string => typeof field === "string")
+              : undefined,
+          })),
+          roles: Array.isArray(item.roles)
+            ? item.roles.filter((role): role is string => typeof role === "string")
+            : undefined,
+        };
+      }
+
+      const pageType = typeof item.type === "string" ? item.type : "detail-view";
+      const entity = typeof item.entity === "string" ? item.entity : "";
+      const title = typeof item.name === "string" ? item.name : pageType;
+
+      const components: PageDef["components"] =
+        pageType === "auth-register"
+          ? [{ type: "form", entity: "User", title }]
+          : pageType === "feed"
+          ? [{ type: "table", entity: entity || "Post", title }]
+          : pageType === "profile"
+          ? [{ type: "detail-view", entity: entity || "User", title }]
+          : pageType === "form"
+          ? [{ type: "form", entity, title }]
+          : [{ type: "detail-view", entity, title }];
+
+      return {
+        name: title,
+        slug:
+          typeof item.slug === "string" && item.slug.length > 0 ? item.slug : slugify(title),
+        components,
+        roles: ["user", "admin"],
+      };
+    })
+    .filter((page) => page.name.length > 0 && page.slug.length > 0);
+}
+
+function normalizeWorkflows(raw: unknown): AppConfig["workflows"] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return raw
+    .filter(isObject)
+    .map((item) => ({
+      name: typeof item.name === "string" ? item.name : "",
+      trigger: typeof item.trigger === "string" ? item.trigger : "on_create",
+      entity: typeof item.entity === "string" ? item.entity : undefined,
+      condition: typeof item.condition === "string" ? item.condition : undefined,
+      actions: Array.isArray(item.actions)
+        ? item.actions
+            .map((action) =>
+              typeof action === "string"
+                ? { type: action, config: {} }
+                : isObject(action)
+                ? {
+                    type: typeof action.type === "string" ? action.type : "",
+                    config: isObject(action.config) ? action.config : {},
+                  }
+                : { type: "", config: {} },
+            )
+            .filter((action) => action.type.length > 0)
+        : [],
+    }))
+    .filter((workflow) => workflow.name.length > 0);
+}
+
+function normalizeLegacyConfig(raw: unknown): unknown {
+  if (!isObject(raw)) {
+    return raw;
+  }
+
+  const app = isObject(raw.app) ? raw.app : null;
+
+  return {
+    ...raw,
+    name: typeof raw.name === "string" ? raw.name : typeof app?.name === "string" ? app.name : "Untitled App",
+    entities: normalizeEntities(raw.entities),
+    pages: normalizePages(raw.pages),
+    workflows: normalizeWorkflows(raw.workflows),
+    auth: isObject(raw.auth)
+      ? raw.auth
+      : {
+          providers: ["credentials"],
+          roles: ["user", "admin"],
+        },
+  };
 }
 
 function parsePages(raw: unknown): PageDef[] {
@@ -118,16 +267,23 @@ function parseAuth(raw: unknown): AppConfig["auth"] {
 }
 
 export function parseConfig(raw: unknown): AppConfig {
-  if (!isObject(raw)) {
-    return defaultAppConfig;
+  const normalized = normalizeLegacyConfig(raw);
+
+  if (!isObject(normalized)) {
+    return {
+      ...defaultAppConfig,
+      pages: getStarterPages(),
+    };
   }
 
+  const pages = normalizePages(normalized.pages);
+
   return {
-    name: typeof raw.name === "string" ? raw.name : defaultAppConfig.name,
-    entities: parseEntities(raw.entities),
-    pages: parsePages(raw.pages),
-    workflows: parseWorkflows(raw.workflows),
-    auth: parseAuth(raw.auth),
+    name: typeof normalized.name === "string" ? normalized.name : defaultAppConfig.name,
+    entities: parseEntities(normalized.entities),
+    pages: pages.length > 0 ? pages : getStarterPages(),
+    workflows: normalizeWorkflows(normalized.workflows),
+    auth: parseAuth(normalized.auth),
   };
 }
 
@@ -137,6 +293,8 @@ function isFieldType(value: unknown): value is FieldType {
     value === "number" ||
     value === "boolean" ||
     value === "date" ||
+    value === "datetime" ||
+    value === "image" ||
     value === "relation" ||
     value === "email" ||
     value === "password" ||

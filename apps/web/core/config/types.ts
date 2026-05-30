@@ -3,6 +3,8 @@ export type FieldType =
   | "number"
   | "boolean"
   | "date"
+  | "datetime"
+  | "image"
   | "relation"
   | "email"
   | "password"

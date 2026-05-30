@@ -3,6 +3,8 @@ export type FieldType =
   | "number"
   | "boolean"
   | "date"
+  | "datetime"
+  | "image"
   | "relation"
   | "email"
   | "password"
@@ -48,26 +50,14 @@ export interface PageDef {
   roles?: string[];
 }
 
-export type WorkflowTrigger =
-  | "on_create"
-  | "on_update"
-  | "on_delete"
-  | "scheduled";
-
-export type WorkflowActionType =
-  | "send_notification"
-  | "send_email"
-  | "webhook"
-  | "db_write";
-
 export interface WorkflowAction {
-  type: WorkflowActionType;
+  type: string;
   config: Record<string, unknown>;
 }
 
 export interface WorkflowDef {
   name: string;
-  trigger: WorkflowTrigger;
+  trigger: string;
   entity?: string;
   condition?: string;
   actions: WorkflowAction[];

@@ -11,6 +11,8 @@ function mapFieldType(type: FieldDef["type"]): string {
     number: "Float",
     boolean: "Boolean",
     date: "DateTime",
+    datetime: "DateTime",
+    image: "String",
     relation: "String", // stored as foreign key string
   };
   return map[type] ?? "String";
@@ -246,6 +248,8 @@ function mapToSqlType(type: FieldDef["type"]): string {
     number: "NUMERIC",
     boolean: "BOOLEAN",
     date: "TIMESTAMP",
+    datetime: "TIMESTAMP",
+    image: "TEXT",
     relation: "TEXT",
   };
   return map[type] ?? "TEXT";

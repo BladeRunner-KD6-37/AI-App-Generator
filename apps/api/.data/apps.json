@@ -1,0 +1,636 @@
+[
+  {
+    "id": "local-app-1780143921572-19c6ip",
+    "slug": "test-app-1780143921416",
+    "name": "Test App",
+    "config": {
+      "name": "Test App",
+      "entities": [],
+      "pages": [],
+      "workflows": [],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:25:21.572Z",
+    "updatedAt": "2026-05-30T12:25:21.572Z"
+  },
+  {
+    "id": "local-app-1780143946017-cd4so1",
+    "slug": "alpha-app-1780143945723",
+    "name": "Alpha App 1780143945723",
+    "config": {
+      "name": "Simple CRM",
+      "entities": [
+        {
+          "name": "Customer",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "email",
+              "type": "email",
+              "required": true,
+              "unique": true
+            },
+            {
+              "name": "phone",
+              "type": "string",
+              "required": false,
+              "unique": false
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "required": false,
+              "unique": false,
+              "defaultValue": "active"
+            },
+            {
+              "name": "notes",
+              "type": "text",
+              "required": false,
+              "unique": false
+            }
+          ],
+          "timestamps": true
+        },
+        {
+          "name": "Deal",
+          "fields": [
+            {
+              "name": "title",
+              "type": "string",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "value",
+              "type": "number",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "stage",
+              "type": "string",
+              "required": false,
+              "unique": false,
+              "defaultValue": "prospecting"
+            },
+            {
+              "name": "customerId",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "Customer",
+                "type": "many-to-one"
+              }
+            }
+          ],
+          "timestamps": true
+        }
+      ],
+      "pages": [
+        {
+          "name": "Dashboard",
+          "slug": "dashboard",
+          "components": [
+            {
+              "type": "stat-card",
+              "entity": "Customer",
+              "title": "Customers"
+            },
+            {
+              "type": "stat-card",
+              "entity": "Deal",
+              "title": "Deals"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "Customers",
+          "slug": "customers",
+          "components": [
+            {
+              "type": "table",
+              "entity": "Customer",
+              "fields": [
+                "name",
+                "email",
+                "phone",
+                "status"
+              ]
+            },
+            {
+              "type": "form",
+              "entity": "Customer"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "Deals",
+          "slug": "deals",
+          "components": [
+            {
+              "type": "table",
+              "entity": "Deal",
+              "fields": [
+                "title",
+                "value",
+                "stage",
+                "customerId"
+              ]
+            },
+            {
+              "type": "form",
+              "entity": "Deal"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        }
+      ],
+      "workflows": [
+        {
+          "name": "Notify on new customer",
+          "trigger": "on_create",
+          "entity": "Customer",
+          "condition": "data.status === 'active'",
+          "actions": [
+            {
+              "type": "send_notification",
+              "config": {
+                "title": "New Customer",
+                "message": "A new customer was added"
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:25:46.017Z",
+    "updatedAt": "2026-05-30T12:25:46.017Z"
+  },
+  {
+    "id": "local-app-1780143972771-nb8tf2",
+    "slug": "alpha-app-2",
+    "name": "Alpha App 2",
+    "config": {
+      "name": "Alpha App 2",
+      "entities": [],
+      "pages": [],
+      "workflows": [],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:26:12.771Z",
+    "updatedAt": "2026-05-30T12:26:12.771Z"
+  },
+  {
+    "id": "local-app-1780144487520-1ipgj4",
+    "slug": "miniinsta",
+    "name": "Mini_insta",
+    "config": {
+      "name": "Untitled App",
+      "entities": [],
+      "pages": [
+        {
+          "name": "Overview",
+          "slug": "overview",
+          "components": [
+            {
+              "type": "stat-card",
+              "entity": "",
+              "title": "Pages configured"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        }
+      ],
+      "workflows": [],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:34:47.520Z",
+    "updatedAt": "2026-05-30T12:34:47.520Z"
+  },
+  {
+    "id": "local-app-1780144551276-vs24g8",
+    "slug": "instagramshort",
+    "name": "instagramshort",
+    "config": {
+      "name": "Untitled App",
+      "entities": [],
+      "pages": [
+        {
+          "name": "Overview",
+          "slug": "overview",
+          "components": [
+            {
+              "type": "stat-card",
+              "entity": "",
+              "title": "Pages configured"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        }
+      ],
+      "workflows": [],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      }
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:35:51.276Z",
+    "updatedAt": "2026-05-30T12:35:51.276Z"
+  },
+  {
+    "id": "local-app-1780144923282-z6sbsc",
+    "slug": "instagram-clone-1780144923011",
+    "name": "Instagram Clone",
+    "config": {
+      "name": "Instagram Clone",
+      "entities": [
+        {
+          "name": "User",
+          "fields": [
+            {
+              "name": "username",
+              "type": "string",
+              "required": true,
+              "unique": true
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "required": true,
+              "unique": true
+            },
+            {
+              "name": "password",
+              "type": "string",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "bio",
+              "type": "text",
+              "required": false,
+              "unique": false
+            },
+            {
+              "name": "profilePicture",
+              "type": "string",
+              "required": false,
+              "unique": false
+            }
+          ],
+          "timestamps": true
+        },
+        {
+          "name": "Post",
+          "fields": [
+            {
+              "name": "image",
+              "type": "string",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "caption",
+              "type": "text",
+              "required": false,
+              "unique": false
+            },
+            {
+              "name": "createdAt",
+              "type": "date",
+              "required": false,
+              "unique": false
+            },
+            {
+              "name": "author",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "User",
+                "type": "many-to-one"
+              }
+            }
+          ],
+          "timestamps": true
+        },
+        {
+          "name": "Comment",
+          "fields": [
+            {
+              "name": "text",
+              "type": "text",
+              "required": true,
+              "unique": false
+            },
+            {
+              "name": "createdAt",
+              "type": "date",
+              "required": false,
+              "unique": false
+            },
+            {
+              "name": "author",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "User",
+                "type": "many-to-one"
+              }
+            },
+            {
+              "name": "post",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "Post",
+                "type": "many-to-one"
+              }
+            }
+          ],
+          "timestamps": true
+        },
+        {
+          "name": "Like",
+          "fields": [
+            {
+              "name": "user",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "User",
+                "type": "many-to-one"
+              }
+            },
+            {
+              "name": "post",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "Post",
+                "type": "many-to-one"
+              }
+            }
+          ],
+          "timestamps": true
+        },
+        {
+          "name": "Follow",
+          "fields": [
+            {
+              "name": "follower",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "User",
+                "type": "many-to-one"
+              }
+            },
+            {
+              "name": "following",
+              "type": "relation",
+              "required": false,
+              "unique": false,
+              "relation": {
+                "entity": "User",
+                "type": "many-to-one"
+              }
+            }
+          ],
+          "timestamps": true
+        }
+      ],
+      "pages": [
+        {
+          "name": "Login",
+          "slug": "login",
+          "components": [
+            {
+              "type": "detail-view",
+              "entity": "",
+              "title": "Login"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "Register",
+          "slug": "register",
+          "components": [
+            {
+              "type": "form",
+              "entity": "User",
+              "title": "Register"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "Feed",
+          "slug": "feed",
+          "components": [
+            {
+              "type": "table",
+              "entity": "Post",
+              "title": "Feed"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "Profile",
+          "slug": "profile",
+          "components": [
+            {
+              "type": "detail-view",
+              "entity": "User",
+              "title": "Profile"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        },
+        {
+          "name": "CreatePost",
+          "slug": "createpost",
+          "components": [
+            {
+              "type": "form",
+              "entity": "Post",
+              "title": "CreatePost"
+            }
+          ],
+          "roles": [
+            "user",
+            "admin"
+          ]
+        }
+      ],
+      "workflows": [
+        {
+          "name": "Create Post",
+          "trigger": "post.created",
+          "actions": [
+            {
+              "type": "save_post",
+              "config": {}
+            },
+            {
+              "type": "update_feed",
+              "config": {}
+            }
+          ]
+        },
+        {
+          "name": "Like Post",
+          "trigger": "post.liked",
+          "actions": [
+            {
+              "type": "save_like",
+              "config": {}
+            },
+            {
+              "type": "update_like_count",
+              "config": {}
+            }
+          ]
+        },
+        {
+          "name": "Follow User",
+          "trigger": "user.followed",
+          "actions": [
+            {
+              "type": "create_follow_relation",
+              "config": {}
+            },
+            {
+              "type": "send_notification",
+              "config": {}
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "providers": [
+          "credentials"
+        ],
+        "roles": [
+          "user",
+          "admin"
+        ]
+      },
+      "app": {
+        "name": "Instagram Clone",
+        "version": "1.0"
+      },
+      "apis": [
+        {
+          "entity": "User",
+          "crud": true
+        },
+        {
+          "entity": "Post",
+          "crud": true
+        },
+        {
+          "entity": "Comment",
+          "crud": true
+        },
+        {
+          "entity": "Like",
+          "crud": true
+        },
+        {
+          "entity": "Follow",
+          "crud": true
+        }
+      ]
+    },
+    "ownerId": "local-1780143587981-rwl26o",
+    "createdAt": "2026-05-30T12:42:03.281Z",
+    "updatedAt": "2026-05-30T12:42:03.281Z"
+  }
+]

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { getJwtSecret } from "../core/auth/jwt";
 
 // ── Extend Express Request to carry user info ─────────────────
 declare global {
@@ -40,12 +41,7 @@ export function authenticate(
   const token = authHeader.split(" ")[1];
 
   try {
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      throw new Error("JWT_SECRET is not set in environment variables");
-    }
-
+    const secret = getJwtSecret();
     const decoded = jwt.verify(token, secret) as JwtPayload;
     req.user = decoded;
     next();
@@ -93,7 +89,7 @@ export function optionalAuth(
   const token = authHeader.split(" ")[1];
 
   try {
-    const secret = process.env.JWT_SECRET ?? "";
+    const secret = getJwtSecret();
     const decoded = jwt.verify(token, secret) as JwtPayload;
     req.user = decoded;
   } catch {

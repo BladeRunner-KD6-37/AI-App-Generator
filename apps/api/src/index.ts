@@ -5,7 +5,6 @@ dotenv.config();
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import authRouter from "./routes/auth.routes";
-import oauthRouter from "./routes/oauth.routes";
 import configRouter, { runtimeRouters } from "./routes/config.routes";
 import runtimeRouter from "./routes/runtime.routes";
 import notificationRouter from "./routes/notification.routes";
@@ -23,11 +22,23 @@ app.use(express.urlencoded({ extended: true }));
 const rawFrontend = process.env.FRONTEND_URL || "http://localhost:3000";
 const allowedOrigins = rawFrontend.split(",").map((s) => s.trim());
 
+function isAllowedOrigin(origin: string): boolean {
+  if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  }
+
+  return false;
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by CORS"));
@@ -41,7 +52,6 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRouter);
-app.use("/api/oauth", oauthRouter);
 app.use("/api/config", configRouter);
 app.use("/api/runtime", runtimeRouter);
 app.use("/api/notifications", notificationRouter);
@@ -74,7 +84,12 @@ export async function bootstrapRuntime(): Promise<void> {
 
 async function startServer(): Promise<void> {
   try {
-    await bootstrapRuntime();
+    // Allow skipping runtime bootstrap for local/dev convenience when DB isn't available
+    if (process.env.SKIP_RUNTIME_BOOTSTRAP !== "1") {
+      await bootstrapRuntime();
+    } else {
+      console.log('[Startup] SKIP_RUNTIME_BOOTSTRAP=1, skipping runtime bootstrap');
+    }
 
     const port = process.env.PORT ? Number(process.env.PORT) : 3001;
     app.listen(port, () => {

@@ -3,6 +3,7 @@ import prisma from "../core/db/prisma";
 import { parseConfigFromObject } from "../core/config/parser";
 import { buildRuntimeRouter } from "../core/api-factory/routeBuilder";
 import { optionalAuth } from "../middleware/auth.middleware";
+import { findLocalAppBySlug } from "../core/config/localAppStore";
 
 const router = Router();
 
@@ -22,9 +23,19 @@ router.get("/:slug/routes", async (req: Request, res: Response) => {
   }
 
   try {
-    const app = await prisma.app.findUnique({
-      where: { slug },
-    });
+    let app;
+
+    try {
+      app = await prisma.app.findUnique({
+        where: { slug },
+      });
+    } catch (dbError) {
+      if (process.env.NODE_ENV === "production") {
+        throw dbError;
+      }
+
+      app = await findLocalAppBySlug(slug);
+    }
 
     if (!app) {
       res.status(404).json({
@@ -112,9 +123,19 @@ router.use(
     }
 
     try {
-      const app = await prisma.app.findUnique({
-        where: { slug },
-      });
+      let app;
+
+      try {
+        app = await prisma.app.findUnique({
+          where: { slug },
+        });
+      } catch (dbError) {
+        if (process.env.NODE_ENV === "production") {
+          throw dbError;
+        }
+
+        app = await findLocalAppBySlug(slug);
+      }
 
       if (!app) {
         res.status(404).json({
