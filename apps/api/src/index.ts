@@ -5,6 +5,7 @@ dotenv.config();
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import authRouter from "./routes/auth.routes";
+import oauthRouter from "./routes/oauth.routes";
 import configRouter, { runtimeRouters } from "./routes/config.routes";
 import runtimeRouter from "./routes/runtime.routes";
 import notificationRouter from "./routes/notification.routes";
@@ -15,6 +16,7 @@ import { buildRuntimeRouter } from "./core/api-factory/routeBuilder";
 import { parseConfigFromObject } from "./core/config/parser";
 
 const app = express();
+let runtimeBootstrapped = false;
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -39,6 +41,7 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/oauth", oauthRouter);
 app.use("/api/config", configRouter);
 app.use("/api/runtime", runtimeRouter);
 app.use("/api/notifications", notificationRouter);
@@ -47,7 +50,11 @@ app.use("/api/export", githubExportRouter);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
-async function startServer(): Promise<void> {
+export async function bootstrapRuntime(): Promise<void> {
+  if (runtimeBootstrapped) {
+    return;
+  }
+
   try {
     const apps = await prisma.app.findMany();
 
@@ -58,6 +65,16 @@ async function startServer(): Promise<void> {
     }
 
     console.log(`[Startup] Loaded ${apps.length} app(s) from the database`);
+    runtimeBootstrapped = true;
+  } catch (error) {
+    console.error("Failed to bootstrap runtime:", error);
+    throw error;
+  }
+}
+
+async function startServer(): Promise<void> {
+  try {
+    await bootstrapRuntime();
 
     const port = process.env.PORT ? Number(process.env.PORT) : 3001;
     app.listen(port, () => {
@@ -69,4 +86,8 @@ async function startServer(): Promise<void> {
   }
 }
 
-startServer();
+export { app };
+
+if (process.env.VERCEL !== "1") {
+  void startServer();
+}

@@ -18,13 +18,7 @@
   "onMatchHeaders": [],
   "rewrites": {
     "beforeFiles": [],
-    "afterFiles": [
-      {
-        "source": "/api/backend/:path*",
-        "destination": "http://localhost:3001/api/:path*",
-        "regex": "^/api/backend(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
-      }
-    ],
+    "afterFiles": [],
     "fallback": []
   },
   "dynamicRoutes": [

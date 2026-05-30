@@ -1,7 +1,5 @@
 import { getToken } from "../../lib/auth";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
 interface ApiResponse<T> {
   success?: boolean;
   data?: T;
@@ -30,7 +28,7 @@ export async function apiRequest<T = unknown>(
     };
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(endpoint, {
     ...options,
     headers: mergedHeaders,
   });

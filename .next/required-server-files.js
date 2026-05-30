@@ -1,9 +1,7 @@
 self.__SERVER_FILES_MANIFEST={
   "version": 1,
   "config": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "http://localhost:3001"
-    },
+    "env": {},
     "webpack": null,
     "typescript": {
       "ignoreBuildErrors": false
@@ -308,17 +306,7 @@ self.__SERVER_FILES_MANIFEST={
     "turbopack": {
       "root": "C:\\Users\\HP\\OneDrive\\Desktop\\meta-runtime"
     },
-    "distDirRoot": ".next",
-    "_originalRewrites": {
-      "beforeFiles": [],
-      "afterFiles": [
-        {
-          "source": "/api/backend/:path*",
-          "destination": "http://localhost:3001/api/:path*"
-        }
-      ],
-      "fallback": []
-    }
+    "distDirRoot": ".next"
   },
   "appDir": "C:\\Users\\HP\\OneDrive\\Desktop\\meta-runtime",
   "relativeAppDir": "",

@@ -88,12 +88,35 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-600">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-semibold text-slate-900 hover:text-slate-700">
-            Register
-          </Link>
-        </p>
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-slate-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <a
+              href="/api/oauth/google/authorize"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M44.5 20H24v8.5h11.9C34.4 32.4 30 36 24 36c-7 0-12.7-5.7-12.7-12.7S17 10.6 24 10.6c3.4 0 6.3 1.3 8.6 3.5l6.1-6.1C36 3.7 30.5 1 24 1 12.4 1 3 10.4 3 22s9.4 21 21 21c10.8 0 19.5-8 20-18.3.5-1.2.5-2.4.5-4.7z" fill="#4285F4"/>
+              </svg>
+              Continue with Google
+            </a>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-semibold text-slate-900 hover:text-slate-700">
+              Register
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
