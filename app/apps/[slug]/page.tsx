@@ -1,0 +1,1 @@
+export { default } from "../../../apps/web/app/apps/[slug]/page";
