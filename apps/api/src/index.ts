@@ -4,6 +4,7 @@ dotenv.config();
 
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import path from "path";
 import authRouter from "./routes/auth.routes";
 import configRouter, { runtimeRouters } from "./routes/config.routes";
 import runtimeRouter from "./routes/runtime.routes";
@@ -47,6 +48,9 @@ app.use(
   }),
 );
 
+// ── Serve static files for uploads ────────────────────────────
+app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
+
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -70,7 +74,7 @@ export async function bootstrapRuntime(): Promise<void> {
 
     for (const appRecord of apps) {
       const { config } = parseConfigFromObject(appRecord.config);
-      const router = buildRuntimeRouter(config);
+      const router = buildRuntimeRouter(config, appRecord.slug);
       runtimeRouters.set(appRecord.slug, router);
     }
 

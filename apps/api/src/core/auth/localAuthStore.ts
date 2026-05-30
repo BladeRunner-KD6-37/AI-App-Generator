@@ -6,6 +6,7 @@ export interface LocalAuthUser {
   email: string;
   name: string | null;
   password: string;
+  profilePictureUrl?: string | null;
   role: string;
   createdAt: string;
 }
@@ -50,6 +51,7 @@ export async function createLocalUser(data: {
   name?: string | null;
   password: string;
   role?: string;
+  profilePictureUrl?: string | null;
 }): Promise<LocalAuthUser> {
   const users = await readUsers();
   const user: LocalAuthUser = {
@@ -57,6 +59,7 @@ export async function createLocalUser(data: {
     email: data.email,
     name: data.name ?? null,
     password: data.password,
+    profilePictureUrl: data.profilePictureUrl ?? null,
     role: data.role ?? "user",
     createdAt: new Date().toISOString(),
   };
@@ -76,6 +79,22 @@ export async function updateLocalUserName(email: string, name: string): Promise<
   }
 
   users[index] = { ...users[index], name };
+  await writeUsers(users);
+  return users[index];
+}
+
+export async function updateLocalUser(
+  id: string,
+  updates: Partial<Omit<LocalAuthUser, "id" | "createdAt">>
+): Promise<LocalAuthUser | null> {
+  const users = await readUsers();
+  const index = users.findIndex((user) => user.id === id);
+
+  if (index === -1) {
+    return null;
+  }
+
+  users[index] = { ...users[index], ...updates };
   await writeUsers(users);
   return users[index];
 }

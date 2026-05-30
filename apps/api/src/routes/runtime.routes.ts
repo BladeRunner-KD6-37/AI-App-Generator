@@ -149,9 +149,9 @@ router.use(
       const { config } =
         parseConfigFromObject(app.config);
 
-      // Build a fresh router from current config
+      // Build a fresh router from current config for this app slug
       const entityRouter =
-        buildRuntimeRouter(config);
+        buildRuntimeRouter(config, slug);
 
       // Hand off to dynamic router
       entityRouter(req, res, next);

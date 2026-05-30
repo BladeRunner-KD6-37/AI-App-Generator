@@ -2,23 +2,33 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import fs from "fs";
+import path from "path";
 import prisma from "../core/db/prisma";
 import { getJwtSecret } from "../core/auth/jwt";
 import {
   createLocalUser,
   findLocalUserByEmail,
   findLocalUserById,
+  updateLocalUser,
 } from "../core/auth/localAuthStore";
 import { validateBody } from "../middleware/validate.middleware";
 import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
+// ── Ensure upload directory exists ───────────────────────────
+const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // ── Validation schemas ────────────────────────────────────────
 const RegisterSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().min(1, "Name is required").optional(),
+  profilePictureBase64: z.string().optional(),
 });
 
 const LoginSchema = z.object({
@@ -41,15 +51,36 @@ function generateToken(user: {
   );
 }
 
+// ── Helper to save profile picture ─────────────────────────────
+async function saveProfilePicture(base64String: string, userId: string): Promise<string | null> {
+  try {
+    if (!base64String || base64String.length === 0) {
+      return null;
+    }
+
+    // Remove data URI prefix if present
+    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+    const filename = `${userId}-${Date.now()}.jpg`;
+    const filepath = path.join(uploadDir, filename);
+
+    fs.writeFileSync(filepath, Buffer.from(base64Data, "base64"));
+    return `/uploads/profiles/${filename}`;
+  } catch (err) {
+    console.error("Failed to save profile picture:", err);
+    return null;
+  }
+}
+
 // ── POST /api/auth/register ───────────────────────────────────
 router.post(
   "/register",
   validateBody(RegisterSchema),
   async (req: Request, res: Response) => {
-    const { email, password, name } = req.body;
+    const { email, password, name, profilePictureBase64 } = req.body;
 
     try {
       const hashedPassword = await bcrypt.hash(password, 12);
+      let profilePictureUrl: string | null = null;
 
       try {
         const existing = await prisma.user.findUnique({ where: { email } });
@@ -63,14 +94,25 @@ router.post(
 
         const user = await prisma.user.create({
           data: { email, password: hashedPassword, name, role: "user" },
-          select: { id: true, email: true, name: true, role: true },
+          select: { id: true, email: true, name: true, role: true, profilePictureUrl: true },
         });
+
+        // Save profile picture if provided
+        if (profilePictureBase64) {
+          profilePictureUrl = await saveProfilePicture(profilePictureBase64, user.id);
+          if (profilePictureUrl) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { profilePictureUrl },
+            });
+          }
+        }
 
         const token = generateToken(user);
 
         res.status(201).json({
           success: true,
-          data: { user, token },
+          data: { user: { ...user, profilePictureUrl }, token },
         });
         return;
       } catch (dbError) {
@@ -87,11 +129,19 @@ router.post(
           return;
         }
 
+        // Generate a temporary ID for local user before saving picture
+        const tempUserId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        let pictureUrl: string | null = null;
+        if (profilePictureBase64) {
+          pictureUrl = await saveProfilePicture(profilePictureBase64, tempUserId);
+        }
+
         const localUser = await createLocalUser({
           email,
           name,
           password: hashedPassword,
           role: "user",
+          profilePictureUrl: pictureUrl,
         });
 
         const token = generateToken(localUser);
@@ -104,6 +154,7 @@ router.post(
               email: localUser.email,
               name: localUser.name,
               role: localUser.role,
+              profilePictureUrl: localUser.profilePictureUrl,
             },
             token,
           },
@@ -211,7 +262,7 @@ router.get("/me", authenticate, async (req: Request, res: Response) => {
     try {
       const user = await prisma.user.findUnique({
         where: { id: req.user!.id },
-        select: { id: true, email: true, name: true, role: true, createdAt: true },
+        select: { id: true, email: true, name: true, role: true, profilePictureUrl: true, createdAt: true },
       });
 
       if (!user) {
@@ -239,6 +290,7 @@ router.get("/me", authenticate, async (req: Request, res: Response) => {
           email: localUser.email,
           name: localUser.name,
           role: localUser.role,
+          profilePictureUrl: localUser.profilePictureUrl,
           createdAt: localUser.createdAt,
         },
       });

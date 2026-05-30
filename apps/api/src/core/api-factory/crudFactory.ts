@@ -70,14 +70,14 @@ function sanitizePayload(
 }
 
 // ── Handler factory — returns all CRUD handlers for an entity ─
-export function createCrudHandlers(entity: EntityDef) {
+export function createCrudHandlers(entity: EntityDef, appSlug: string) {
   const tableName = entity.name;
 
   return {
     // GET /api/runtime/:entity
     async getAll(req: Request, res: Response) {
       try {
-        const rows = await dynamicFindMany(tableName);
+        const rows = await dynamicFindMany(tableName, appSlug);
         return ok(res, rows);
       } catch (err) {
         return serverError(res, err);
@@ -93,7 +93,7 @@ export function createCrudHandlers(entity: EntityDef) {
       if (!id) return badRequest(res, "ID is required");
 
       try {
-        const row = await dynamicFindOne(tableName, id);
+        const row = await dynamicFindOne(tableName, id, appSlug);
 
         if (!row) return notFound(res, tableName, id);
 
@@ -121,7 +121,7 @@ export function createCrudHandlers(entity: EntityDef) {
       const sanitized = sanitizePayload(entity, body);
 
       try {
-        const row = await dynamicCreate(tableName, sanitized);
+        const row = await dynamicCreate(tableName, sanitized, appSlug);
         return created(res, row);
       } catch (err) {
         return serverError(res, err);
@@ -145,7 +145,7 @@ export function createCrudHandlers(entity: EntityDef) {
       }
 
       try {
-        const existing = await dynamicFindOne(tableName, id);
+        const existing = await dynamicFindOne(tableName, id, appSlug);
 
         if (!existing) {
           return notFound(res, tableName, id);
@@ -153,7 +153,7 @@ export function createCrudHandlers(entity: EntityDef) {
 
         const sanitized = sanitizePayload(entity, body);
 
-        const updated = await dynamicUpdate(tableName, id, sanitized);
+        const updated = await dynamicUpdate(tableName, id, sanitized, appSlug);
 
         return ok(res, updated);
       } catch (err) {
@@ -163,37 +163,37 @@ export function createCrudHandlers(entity: EntityDef) {
 
     // DELETE /api/runtime/:entity/:id
     async remove(req: Request, res: Response) {
-  const id = Array.isArray(req.params.id)
-    ? req.params.id[0]
-    : req.params.id;
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
 
-  if (!id) {
-    return badRequest(res, "ID is required");
-  }
+      if (!id) {
+        return badRequest(res, "ID is required");
+      }
 
-  try {
-    const existing = await dynamicFindOne(tableName, id);
+      try {
+        const existing = await dynamicFindOne(tableName, id, appSlug);
 
-    if (!existing) {
-      return notFound(res, tableName, id);
-    }
+        if (!existing) {
+          return notFound(res, tableName, id);
+        }
 
-    await dynamicDelete(tableName, id);
+        await dynamicDelete(tableName, id, appSlug);
 
-    return ok(res, {
-      deleted: true,
-      id,
-    });
-  } catch (err) {
-    return serverError(res, err);
-  }
-},
+        return ok(res, {
+          deleted: true,
+          id,
+        });
+      } catch (err) {
+        return serverError(res, err);
+      }
+    },
 
     // POST /api/runtime/:entity/init-table
     // Called when a new app config is registered
     async initTable(_req: Request, res: Response) {
       try {
-        await createDynamicTable(entity);
+        await createDynamicTable(entity, appSlug);
         return ok(res, {
           message: `Table "${tableName}" created successfully`,
         });

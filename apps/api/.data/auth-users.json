@@ -6,5 +6,13 @@
     "password": "$2b$12$OjshOR5X5Arw7LioQLP2Ke3FxmQOCE4zUdTS.P8rHu56udcstEK82",
     "role": "user",
     "createdAt": "2026-05-30T12:19:47.981Z"
+  },
+  {
+    "id": "local-1780147591742-srs7v1",
+    "email": "john@example.com",
+    "name": "John Doe",
+    "password": "$2b$12$UZbzIBk1ywe4ozcPRGJhFOTL5BnW10wB3eDY0MXgHeZH5Pkugd6XO",
+    "role": "user",
+    "createdAt": "2026-05-30T13:26:31.742Z"
   }
 ]

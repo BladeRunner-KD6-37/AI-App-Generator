@@ -1,5 +1,48 @@
 import { AppConfig, EntityDef, FieldDef } from "../config/types";
+import { promises as fs } from "fs";
+import path from "path";
 import prisma from "./prisma";
+
+const runtimeStoreRoot = path.join(process.cwd(), ".data", "runtime");
+
+async function getLocalRuntimeFilePath(appSlug: string, tableName: string): Promise<string> {
+  const sanitizedTable = sanitizeIdentifier(tableName).toLowerCase() || "table";
+  const dir = path.join(runtimeStoreRoot, sanitizeIdentifier(appSlug));
+  await fs.mkdir(dir, { recursive: true });
+  return path.join(dir, `${sanitizedTable}.json`);
+}
+
+async function readLocalRuntimeRows(appSlug: string, tableName: string): Promise<Record<string, unknown>[]> {
+  try {
+    const filePath = await getLocalRuntimeFilePath(appSlug, tableName);
+    const contents = await fs.readFile(filePath, "utf8");
+    const parsed = JSON.parse(contents);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw err;
+  }
+}
+
+async function writeLocalRuntimeRows(
+  appSlug: string,
+  tableName: string,
+  rows: Record<string, unknown>[],
+): Promise<void> {
+  const filePath = await getLocalRuntimeFilePath(appSlug, tableName);
+  await fs.writeFile(filePath, JSON.stringify(rows, null, 2), "utf8");
+}
+
+async function ensureLocalRuntimeTable(appSlug: string, tableName: string): Promise<void> {
+  const filePath = await getLocalRuntimeFilePath(appSlug, tableName);
+  try {
+    await fs.access(filePath);
+  } catch {
+    await fs.writeFile(filePath, "[]", "utf8");
+  }
+}
 
 // ── Map config field types to Prisma field types ──────────────
 function mapFieldType(type: FieldDef["type"]): string {
@@ -94,7 +137,7 @@ datasource db {
 
 export async function dynamicFindMany(
   tableName: string,
-  where?: Record<string, unknown>
+  appSlug?: string,
 ): Promise<unknown[]> {
   const sanitizedTable = sanitizeIdentifier(tableName);
 
@@ -104,13 +147,23 @@ export async function dynamicFindMany(
     );
     return rows as unknown[];
   } catch {
-    return [];
+    if (!appSlug) {
+      return [];
+    }
+
+    const rows = await readLocalRuntimeRows(appSlug, tableName);
+    return rows.sort((a, b) => {
+      const aCreated = new Date(String(a.createdAt)).getTime();
+      const bCreated = new Date(String(b.createdAt)).getTime();
+      return bCreated - aCreated;
+    });
   }
 }
 
 export async function dynamicFindOne(
   tableName: string,
-  id: string
+  id: string,
+  appSlug?: string,
 ): Promise<unknown | null> {
   const sanitizedTable = sanitizeIdentifier(tableName);
 
@@ -122,13 +175,19 @@ export async function dynamicFindOne(
     const results = rows as unknown[];
     return results[0] ?? null;
   } catch {
-    return null;
+    if (!appSlug) {
+      return null;
+    }
+
+    const rows = await readLocalRuntimeRows(appSlug, tableName);
+    return rows.find((row) => String(row.id) === id) ?? null;
   }
 }
 
 export async function dynamicCreate(
   tableName: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  appSlug?: string,
 ): Promise<unknown> {
   const sanitizedTable = sanitizeIdentifier(tableName);
 
@@ -159,15 +218,26 @@ export async function dynamicCreate(
     const now = new Date();
     return { id, ...data, createdAt: now, updatedAt: now };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    throw new Error(`Failed to create record in ${tableName}: ${message}`);
+    if (!appSlug) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Failed to create record in ${tableName}: ${message}`);
+    }
+
+    await ensureLocalRuntimeTable(appSlug, tableName);
+    const now = new Date().toISOString();
+    const row = { id, ...data, createdAt: now, updatedAt: now };
+    const rows = await readLocalRuntimeRows(appSlug, tableName);
+    rows.unshift(row);
+    await writeLocalRuntimeRows(appSlug, tableName, rows);
+    return row;
   }
 }
 
 export async function dynamicUpdate(
   tableName: string,
   id: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  appSlug?: string,
 ): Promise<unknown> {
   const sanitizedTable = sanitizeIdentifier(tableName);
 
@@ -183,16 +253,30 @@ export async function dynamicUpdate(
       `UPDATE "${sanitizedTable}" SET ${setClauses} WHERE id = $${values.length}`,
       ...values
     );
-    return dynamicFindOne(tableName, id);
+    return dynamicFindOne(tableName, id, appSlug);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    throw new Error(`Failed to update record in ${tableName}: ${message}`);
+    if (!appSlug) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Failed to update record in ${tableName}: ${message}`);
+    }
+
+    const rows = await readLocalRuntimeRows(appSlug, tableName);
+    const index = rows.findIndex((row) => String(row.id) === id);
+    if (index === -1) {
+      throw new Error(`Record not found: ${id}`);
+    }
+
+    const now = new Date().toISOString();
+    rows[index] = { ...rows[index], ...data, updatedAt: now };
+    await writeLocalRuntimeRows(appSlug, tableName, rows);
+    return rows[index];
   }
 }
 
 export async function dynamicDelete(
   tableName: string,
-  id: string
+  id: string,
+  appSlug?: string,
 ): Promise<void> {
   const sanitizedTable = sanitizeIdentifier(tableName);
 
@@ -202,13 +286,19 @@ export async function dynamicDelete(
       id
     );
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    throw new Error(`Failed to delete record in ${tableName}: ${message}`);
+    if (!appSlug) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Failed to delete record in ${tableName}: ${message}`);
+    }
+
+    const rows = await readLocalRuntimeRows(appSlug, tableName);
+    const filteredRows = rows.filter((row) => String(row.id) !== id);
+    await writeLocalRuntimeRows(appSlug, tableName, filteredRows);
   }
 }
 
 // ── Create a dynamic table from an entity definition ─────────
-export async function createDynamicTable(entity: EntityDef): Promise<void> {
+export async function createDynamicTable(entity: EntityDef, appSlug?: string): Promise<void> {
   const sanitizedTable = sanitizeIdentifier(entity.name);
 
   const columnDefs = entity.fields
@@ -233,8 +323,12 @@ export async function createDynamicTable(entity: EntityDef): Promise<void> {
   try {
     await prisma.$executeRawUnsafe(sql);
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    throw new Error(`Failed to create table ${sanitizedTable}: ${message}`);
+    if (!appSlug) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      throw new Error(`Failed to create table ${sanitizedTable}: ${message}`);
+    }
+
+    await ensureLocalRuntimeTable(appSlug, entity.name);
   }
 }
 

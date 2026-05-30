@@ -11,8 +11,43 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  function handleProfilePictureChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setProfilePicture(null);
+      setProfilePicturePreview(null);
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Profile picture must be less than 5MB");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      setError("Profile picture must be an image file");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setProfilePicture(base64);
+      setProfilePicturePreview(base64);
+      setError(null);
+    };
+    reader.onerror = () => {
+      setError("Failed to read file");
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -20,7 +55,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const data = await register(email, password, name || undefined);
+      const data = await register(email, password, name || undefined, profilePicture || undefined);
       saveAuth(data);
       router.push("/dashboard");
     } catch (err) {
@@ -91,6 +126,33 @@ export default function RegisterPage() {
               className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
             />
             <p className="mt-2 text-sm text-slate-500">Minimum 8 characters</p>
+          </div>
+
+          <div>
+            <label htmlFor="profilePicture" className="block text-sm font-medium text-slate-700">
+              Profile Picture (optional)
+            </label>
+            <div className="mt-2">
+              {profilePicturePreview ? (
+                <div className="mb-3 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={profilePicturePreview}
+                    alt="Profile preview"
+                    className="h-20 w-20 rounded-full object-cover ring-2 ring-slate-300"
+                  />
+                </div>
+              ) : null}
+              <input
+                id="profilePicture"
+                name="profilePicture"
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-200 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-300"
+              />
+              <p className="mt-2 text-sm text-slate-500">JPG, PNG or GIF (max 5MB)</p>
+            </div>
           </div>
 
           <button

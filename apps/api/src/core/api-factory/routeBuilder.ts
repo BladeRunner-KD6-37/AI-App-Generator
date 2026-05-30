@@ -6,7 +6,7 @@ import { createCrudHandlers } from "./crudFactory";
 // Returns a router with CRUD endpoints for every entity
 // Mount this at /api/runtime in your main Express app
 
-export function buildRuntimeRouter(config: AppConfig): Router {
+export function buildRuntimeRouter(config: AppConfig, appSlug: string): Router {
   const router = Router();
 
   if (!config.entities || config.entities.length === 0) {
@@ -16,7 +16,7 @@ export function buildRuntimeRouter(config: AppConfig): Router {
   config.entities.forEach((entity) => {
     if (!entity.name) return; // skip invalid entity
 
-    const handlers = createCrudHandlers(entity);
+    const handlers = createCrudHandlers(entity, appSlug);
     const base = `/${entity.name.toLowerCase()}`;
 
     // ── Init table (called once on config registration) ───────

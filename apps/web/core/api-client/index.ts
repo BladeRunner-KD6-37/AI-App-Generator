@@ -56,6 +56,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     name: string | null;
+    profilePictureUrl?: string | null;
     role: string;
   };
   token: string;
@@ -102,14 +103,15 @@ export function register(
   email: string,
   password: string,
   name?: string,
+  profilePictureBase64?: string,
 ): Promise<AuthResponse> {
   return apiRequest<AuthResponse>("/api/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, name }),
+    body: JSON.stringify({ email, password, name, profilePictureBase64 }),
   });
 }
 
-export function getMe(): Promise<{ id: string; email: string; name: string | null; role: string }> {
+export function getMe(): Promise<{ id: string; email: string; name: string | null; profilePictureUrl?: string | null; role: string }> {
   return apiRequest("/api/auth/me");
 }
 

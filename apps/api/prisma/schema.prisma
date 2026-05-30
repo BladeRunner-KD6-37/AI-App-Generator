@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String?
-  password      String?
-  role          String         @default("user")
-  createdAt     DateTime       @default(now())
-  apps          App[]
-  notifications Notification[]
+  id                 String         @id @default(cuid())
+  email              String         @unique
+  name               String?
+  password           String?
+  profilePictureUrl  String?
+  role               String         @default("user")
+  createdAt          DateTime       @default(now())
+  apps               App[]
+  notifications      Notification[]
 }
 
 model App {

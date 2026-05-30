@@ -173,6 +173,16 @@ MetaRuntime has most of the infrastructure to be a metadata-driven application r
   - No instructions on how to create and test an app
   - Users don't know what should happen end-to-end
 
+### 8. **Database Connection Not Resilient** ⚠️
+- **Status:** CRASHES WITHOUT DATABASE
+- **Problem:**
+  - When PostgreSQL is not running, the app crashes with unhandled rejection
+  - Expected per spec: `SKIP_RUNTIME_BOOTSTRAP=1` env var allows API to start without DB
+  - However, frontend and actual data operations still fail hard
+  - The spec says apps should be resilient, but they're not to database unavailability
+  - Development fallback (`.data/apps.json` local storage) exists for API but not wired to frontend
+- **Error seen:** `Authentication failed against database server at 'localhost'`
+
 ---
 
 ## 🔴 Critical Issues to Fix (Priority Order)
@@ -282,3 +292,24 @@ The following features ARE implemented correctly:
 ## Conclusion
 
 **MetaRuntime is 70% complete.** The infrastructure is solid, but the most critical feature—**workflow automation**—is not connected. Fixing issues in Priority 1 and 2 would bring this to 90% functionality. The project has good error handling, resilient config parsing, and clean architecture. With the fixes, it would genuinely work as a metadata-driven application runtime.
+
+---
+
+## Environment & Prerequisites
+
+**Current Status:**
+- API server (port 3001): RUNNING
+- Web server (port 3000): READY (but fails when database unavailable)
+- PostgreSQL: NOT RUNNING (required for full functionality)
+
+**To fully test the system:**
+1. Set up PostgreSQL 13+ locally or point `DATABASE_URL` env var to remote instance
+2. Ensure `.env` in `apps/api/` has valid `DATABASE_URL`
+3. Start API: `npm run dev` from `apps/api/`
+4. Start Web: `npm run dev` from `apps/web/`
+5. Navigate to `http://localhost:3000`
+
+**To test in development without a database:**
+- Set `SKIP_RUNTIME_BOOTSTRAP=1` in `apps/api/.env` to start API without DB
+- API will use local `.data/apps.json` fallback
+- Frontend still requires database for data operations
