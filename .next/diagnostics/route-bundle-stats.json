@@ -1,11 +1,11 @@
 [
   {
     "route": "/apps/[slug]",
-    "firstLoadUncompressedJsBytes": 583712,
+    "firstLoadUncompressedJsBytes": 583842,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\0~a7g2yb0l_ji.js",
       ".next\\static\\chunks\\0d3shmwh5_nmn.js",
-      ".next\\static\\chunks\\17yx_iwnvkogn.js",
+      ".next\\static\\chunks\\0rir.sh8tvwg6.js",
       ".next\\static\\chunks\\0bzupvr5gt3k9.js",
       ".next\\static\\chunks\\0pqt~8bl3ukh4.js",
       ".next\\static\\chunks\\07lhk_q6pmm3r.js",
@@ -15,11 +15,11 @@
   },
   {
     "route": "/dashboard",
-    "firstLoadUncompressedJsBytes": 577615,
+    "firstLoadUncompressedJsBytes": 577745,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\0~a7g2yb0l_ji.js",
       ".next\\static\\chunks\\0d3shmwh5_nmn.js",
-      ".next\\static\\chunks\\0pn5h0k1d7eai.js",
+      ".next\\static\\chunks\\0iaxsk32ssi.8.js",
       ".next\\static\\chunks\\0bzupvr5gt3k9.js",
       ".next\\static\\chunks\\0pqt~8bl3ukh4.js",
       ".next\\static\\chunks\\07lhk_q6pmm3r.js",
@@ -29,11 +29,11 @@
   },
   {
     "route": "/register",
-    "firstLoadUncompressedJsBytes": 554151,
+    "firstLoadUncompressedJsBytes": 554281,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\0~a7g2yb0l_ji.js",
       ".next\\static\\chunks\\0d3shmwh5_nmn.js",
-      ".next\\static\\chunks\\14spa~17w79ce.js",
+      ".next\\static\\chunks\\0oehc~9e.5zhh.js",
       ".next\\static\\chunks\\0bzupvr5gt3k9.js",
       ".next\\static\\chunks\\0pqt~8bl3ukh4.js",
       ".next\\static\\chunks\\07lhk_q6pmm3r.js",
@@ -43,11 +43,11 @@
   },
   {
     "route": "/login",
-    "firstLoadUncompressedJsBytes": 552341,
+    "firstLoadUncompressedJsBytes": 552471,
     "firstLoadChunkPaths": [
       ".next\\static\\chunks\\0~a7g2yb0l_ji.js",
       ".next\\static\\chunks\\0d3shmwh5_nmn.js",
-      ".next\\static\\chunks\\0xgsnn318p6sy.js",
+      ".next\\static\\chunks\\0lj~-zm_y0h4b.js",
       ".next\\static\\chunks\\0bzupvr5gt3k9.js",
       ".next\\static\\chunks\\0pqt~8bl3ukh4.js",
       ".next\\static\\chunks\\07lhk_q6pmm3r.js",
