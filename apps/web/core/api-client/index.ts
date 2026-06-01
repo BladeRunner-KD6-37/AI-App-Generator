@@ -6,6 +6,29 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+function getApiBaseUrl(): string {
+  // In browser, use the environment variable
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_URL || "";
+  }
+  // In server context (SSR), also use the environment variable
+  return process.env.NEXT_PUBLIC_API_URL || "";
+}
+
+function buildUrl(endpoint: string): string {
+  const baseUrl = getApiBaseUrl();
+  // If endpoint is absolute, use it as-is
+  if (endpoint.startsWith("http://") || endpoint.startsWith("https://")) {
+    return endpoint;
+  }
+  // Otherwise, prepend the base URL
+  if (baseUrl) {
+    return `${baseUrl}${endpoint}`;
+  }
+  // Fallback to relative URL if no base URL configured
+  return endpoint;
+}
+
 export async function apiRequest<T = unknown>(
   endpoint: string,
   options: RequestInit = {},
@@ -28,7 +51,9 @@ export async function apiRequest<T = unknown>(
     };
   }
 
-  const response = await fetch(endpoint, {
+  const fullUrl = buildUrl(endpoint);
+
+  const response = await fetch(fullUrl, {
     ...options,
     headers: mergedHeaders,
   });
