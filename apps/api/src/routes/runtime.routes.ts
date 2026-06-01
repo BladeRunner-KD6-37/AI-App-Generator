@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
-import prisma from "../core/db/prisma.ts";
-import { parseConfigFromObject } from "../core/config/parser.ts";
-import { buildRuntimeRouter } from "../core/api-factory/routeBuilder.ts";
-import { optionalAuth } from "../middleware/auth.middleware.ts";
-import { findLocalAppBySlug } from "../core/config/localAppStore.ts";
+import prisma from "../core/db/prisma.js";
+import { parseConfigFromObject } from "../core/config/parser.js";
+import { buildRuntimeRouter } from "../core/api-factory/routeBuilder.js";
+import { optionalAuth } from "../middleware/auth.middleware.js";
+import { findLocalAppBySlug } from "../core/config/localAppStore.js";
 
 const router = Router();
 

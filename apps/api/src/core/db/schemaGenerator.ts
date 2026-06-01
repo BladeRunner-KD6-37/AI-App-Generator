@@ -1,7 +1,7 @@
-import { AppConfig, EntityDef, FieldDef } from "../config/types.ts";
+import { AppConfig, EntityDef, FieldDef } from "../config/types.js";
 import { promises as fs } from "fs";
 import path from "path";
-import prisma from "./prisma.ts";
+import prisma from "./prisma.js";
 
 const runtimeStoreRoot = path.join(process.cwd(), ".data", "runtime");
 

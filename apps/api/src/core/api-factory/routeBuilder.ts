@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AppConfig } from "../config/types.ts";
-import { createCrudHandlers } from "./crudFactory.ts";
+import { AppConfig } from "../config/types.js";
+import { createCrudHandlers } from "./crudFactory.js";
 
 // ── Build all dynamic routes from an app config ───────────────
 // Returns a router with CRUD endpoints for every entity
