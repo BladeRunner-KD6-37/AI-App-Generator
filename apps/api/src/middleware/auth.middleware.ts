@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { getJwtSecret } from "../core/auth/jwt";
+import { getJwtSecret } from "../core/auth/jwt.ts";
 
 // ── Extend Express Request to carry user info ─────────────────
 declare global {

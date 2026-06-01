@@ -4,10 +4,10 @@ import path from "path";
 import { execFile as execFileCallback } from "child_process";
 import { promisify } from "util";
 import { randomUUID } from "crypto";
-import prisma from "../../core/db/prisma";
-import { parseConfigFromObject } from "../../core/config/parser";
-import { AppConfig, EntityDef, WorkflowDef } from "../../core/config/types";
-import { AppError } from "../../middleware/errorHandler";
+import prisma from "../../core/db/prisma.ts";
+import { parseConfigFromObject } from "../../core/config/parser.ts";
+import { AppConfig, EntityDef, WorkflowDef } from "../../core/config/types.ts";
+import { AppError } from "../../middleware/errorHandler.ts";
 
 const execFile = promisify(execFileCallback);
 
@@ -402,7 +402,7 @@ function buildFrontendTsConfig(): string {
 function buildFrontendMain(): string {
   return `import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./App.ts";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -465,8 +465,8 @@ function buildFrontendApp(config: AppConfig): string {
   const tableBodyCells = config.entities[0]?.fields.map((field) => "<td>{String(row[\"" + field.name + "\"] ?? \"-\")}</td>").join("") ?? "";
 
   return `import { useMemo, useState } from "react";
-import { appConfig } from "./generated/app-config";
-import { createRuntimeRow, deleteRuntimeRow, getRuntimeRows } from "./api";
+import { appConfig } from "./generated/app-config.ts";
+import { createRuntimeRow, deleteRuntimeRow, getRuntimeRows } from "./api.ts";
 
 const entityFields = ${JSON.stringify(config.entities.reduce<Record<string, string[]>>((acc, entity) => {
     acc[entity.name] = entity.fields.map((field) => field.name);
@@ -768,7 +768,7 @@ function buildBackendApp(config: AppConfig): string {
   return `import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
-import { appConfig } from "./generated/app-config";
+import { appConfig } from "./generated/app-config.ts";
 
 const prisma = new PrismaClient();
 const app = express();

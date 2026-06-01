@@ -1,6 +1,6 @@
-import { WorkflowAction, WorkflowDef } from "../config/types";
-import { evaluateCondition } from "./conditions";
-import prisma from "../db/prisma";
+import { WorkflowAction, WorkflowDef } from "../config/types.ts";
+import { evaluateCondition } from "./conditions.ts";
+import prisma from "../db/prisma.ts";
 
 type TriggerData = Record<string, unknown>;
 

@@ -1,5 +1,5 @@
 import { Notification } from "@prisma/client";
-import prisma from "../../core/db/prisma";
+import prisma from "../../core/db/prisma.ts";
 
 type TriggerData = Record<string, unknown>;
 

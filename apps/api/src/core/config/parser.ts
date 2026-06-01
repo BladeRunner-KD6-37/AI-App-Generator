@@ -1,5 +1,5 @@
-import { AppConfig } from "./types";
-import { validateConfig, ValidationResult } from "./validator";
+import { AppConfig } from "./types.ts";
+import { validateConfig, ValidationResult } from "./validator.ts";
 
 // ── Parse raw JSON string safely ──────────────────────────────
 export function parseConfigFromString(raw: string): ValidationResult {

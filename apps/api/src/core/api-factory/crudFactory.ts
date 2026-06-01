@@ -6,8 +6,8 @@ import {
   dynamicUpdate,
   dynamicDelete,
   createDynamicTable,
-} from "../db/schemaGenerator";
-import { EntityDef } from "../config/types";
+} from "../db/schemaGenerator.ts";
+import { EntityDef } from "../config/types.ts";
 
 // ── Response helpers ──────────────────────────────────────────
 const ok = (res: Response, data: unknown) =>

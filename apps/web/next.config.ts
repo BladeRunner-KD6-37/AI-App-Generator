@@ -4,6 +4,9 @@ const backendUrl = process.env.BACKEND_URL ?? "http://localhost:3001";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  turbopack: {
+    root: ".",
+  },
   async rewrites() {
     return [
       {

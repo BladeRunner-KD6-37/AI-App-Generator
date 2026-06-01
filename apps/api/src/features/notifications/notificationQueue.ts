@@ -1,5 +1,5 @@
 import Bull, { Job } from "bull";
-import { createNotification, broadcastNotification } from "./notificationService";
+import { createNotification, broadcastNotification } from "./notificationService.ts";
 
 export interface NotificationJob {
   type: "single" | "broadcast";

@@ -1,19 +1,19 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import prisma from "../core/db/prisma";
-import { parseConfigFromObject } from "../core/config/parser";
-import { buildRuntimeRouter } from "../core/api-factory/routeBuilder";
-import { getRoutesSummary } from "../core/api-factory/routeBuilder";
-import { createDynamicTable } from "../core/db/schemaGenerator";
+import prisma from "../core/db/prisma.ts";
+import { parseConfigFromObject } from "../core/config/parser.ts";
+import { buildRuntimeRouter } from "../core/api-factory/routeBuilder.ts";
+import { getRoutesSummary } from "../core/api-factory/routeBuilder.ts";
+import { createDynamicTable } from "../core/db/schemaGenerator.ts";
 import {
   createLocalApp,
   deleteLocalApp,
   findLocalAppBySlug,
   findLocalAppsByOwnerId,
-} from "../core/config/localAppStore";
-import { authenticate, requireRole } from "../middleware/auth.middleware";
-import { validateBody } from "../middleware/validate.middleware";
-import { AppError } from "../middleware/errorHandler";
+} from "../core/config/localAppStore.ts";
+import { authenticate, requireRole } from "../middleware/auth.middleware.ts";
+import { validateBody } from "../middleware/validate.middleware.ts";
+import { AppError } from "../middleware/errorHandler.ts";
 
 export const runtimeRouters = new Map<string, Router>();
 

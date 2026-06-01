@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import { authenticate } from "../middleware/auth.middleware";
-import { validateBody, validateQuery } from "../middleware/validate.middleware";
-import { startGitHubExport, getGitHubExportStatus } from "../features/github-export/githubExportService";
+import { authenticate } from "../middleware/auth.middleware.ts";
+import { validateBody, validateQuery } from "../middleware/validate.middleware.ts";
+import { startGitHubExport, getGitHubExportStatus } from "../features/github-export/githubExportService.ts";
 
 const router = Router();
 

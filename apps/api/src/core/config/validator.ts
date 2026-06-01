@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppConfig } from "./types";
+import { AppConfig } from "./types.ts";
 
 // ── Field schema ──────────────────────────────────────────────
 const FieldSchema = z

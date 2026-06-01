@@ -4,16 +4,16 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";
-import prisma from "../core/db/prisma";
-import { getJwtSecret } from "../core/auth/jwt";
+import prisma from "../core/db/prisma.ts";
+import { getJwtSecret } from "../core/auth/jwt.ts";
 import {
   createLocalUser,
   findLocalUserByEmail,
   findLocalUserById,
   updateLocalUser,
-} from "../core/auth/localAuthStore";
-import { validateBody } from "../middleware/validate.middleware";
-import { authenticate } from "../middleware/auth.middleware";
+} from "../core/auth/localAuthStore.ts";
+import { validateBody } from "../middleware/validate.middleware.ts";
+import { authenticate } from "../middleware/auth.middleware.ts";
 
 const router = Router();
 
