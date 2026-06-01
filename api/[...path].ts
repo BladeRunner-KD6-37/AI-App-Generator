@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { app, bootstrapRuntime } from "../apps/api/src/index";
+import { app, bootstrapRuntime } from "../apps/api/dist/index.js";
 
 let bootstrapPromise: Promise<void> | null = null;
 
