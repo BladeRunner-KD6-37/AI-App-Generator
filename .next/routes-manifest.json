@@ -1,7 +1,7 @@
 {
   "version": 3,
   "pages404": true,
-  "appType": "app",
+  "appType": "hybrid",
   "caseSensitive": false,
   "basePath": "",
   "redirects": [
@@ -23,6 +23,14 @@
   },
   "dynamicRoutes": [
     {
+      "page": "/api/[...path]",
+      "regex": "^/api/(.+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpath": "nxtPpath"
+      },
+      "namedRegex": "^/api/(?<nxtPpath>.+?)(?:/)?$"
+    },
+    {
       "page": "/apps/[slug]",
       "regex": "^/apps/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -37,12 +45,6 @@
       "regex": "^/(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/(?:/)?$"
-    },
-    {
-      "page": "/_global-error",
-      "regex": "^/_global\\-error(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/_global\\-error(?:/)?$"
     },
     {
       "page": "/_not-found",

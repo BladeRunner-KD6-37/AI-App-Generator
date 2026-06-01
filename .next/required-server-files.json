@@ -104,7 +104,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "C:\\Users\\HP\\OneDrive\\Desktop\\meta-runtime",
+    "outputFileTracingRoot": "C:\\Users\\HP\\OneDrive\\Desktop\\Presonal projects\\meta-runtime",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -304,11 +304,16 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "C:\\Users\\HP\\OneDrive\\Desktop\\meta-runtime"
+      "root": "C:\\Users\\HP\\OneDrive\\Desktop\\Presonal projects\\meta-runtime"
     },
-    "distDirRoot": ".next"
+    "distDirRoot": ".next",
+    "_originalRewrites": {
+      "beforeFiles": [],
+      "afterFiles": [],
+      "fallback": []
+    }
   },
-  "appDir": "C:\\Users\\HP\\OneDrive\\Desktop\\meta-runtime",
+  "appDir": "C:\\Users\\HP\\OneDrive\\Desktop\\Presonal projects\\meta-runtime",
   "relativeAppDir": "",
   "files": [
     ".next\\routes-manifest.json",

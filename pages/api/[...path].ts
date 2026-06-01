@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { app, bootstrapRuntime } from "../../../apps/api/src/index";
+import { app, bootstrapRuntime } from "../../apps/api/src/index";
 
 export const runtime = "nodejs";
 
