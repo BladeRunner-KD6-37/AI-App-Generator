@@ -1,4 +1,6 @@
 # Nixpacks configuration to build and deploy the Express API in a monorepo structure
+providers = ["node"]
+
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
