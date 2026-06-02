@@ -2,9 +2,10 @@ import { Router } from "express";
 import { z } from "zod";
 import prisma from "../core/db/prisma.js";
 import { parseConfigFromObject } from "../core/config/parser.js";
+import { buildRuntimeRouter } from "../core/api-factory/routeBuilder.js";
 import { getRoutesSummary } from "../core/api-factory/routeBuilder.js";
 import { createDynamicTable } from "../core/db/schemaGenerator.js";
-import { createLocalApp, deleteLocalApp, findLocalAppBySlug, findLocalAppsByOwnerId, } from "../core/config/localAppStore.js";
+import { createLocalApp, deleteLocalApp, findLocalAppBySlug, findLocalAppsByOwnerId, updateLocalApp, } from "../core/config/localAppStore.js";
 import { authenticate, requireRole } from "../middleware/auth.middleware.js";
 import { validateBody } from "../middleware/validate.middleware.js";
 export const runtimeRouters = new Map();
@@ -184,7 +185,7 @@ router.get("/:slug", async (req, res) => {
     }
 });
 // ── PUT /api/config/:slug — update an app's config ───────────
-router.get("/:slug", async (req, res) => {
+router.put("/:slug", validateBody(UpdateConfigSchema), async (req, res) => {
     const slug = Array.isArray(req.params.slug)
         ? req.params.slug[0]
         : req.params.slug;
@@ -195,40 +196,70 @@ router.get("/:slug", async (req, res) => {
         });
         return;
     }
+    const { config: rawConfig } = req.body;
     try {
+        // Validate and repair the config
+        const { config, warnings } = parseConfigFromObject(rawConfig);
         let app;
         try {
-            app = await prisma.app.findUnique({
+            app = (await prisma.app.update({
                 where: { slug },
-            });
+                data: {
+                    config: config,
+                },
+            }));
         }
         catch (dbError) {
             if (process.env.NODE_ENV === "production") {
                 throw dbError;
             }
-            app = await findLocalAppBySlug(slug);
+            const localApp = await updateLocalApp(slug, { config });
+            if (!localApp) {
+                res.status(404).json({
+                    success: false,
+                    error: `App "${slug}" not found`,
+                });
+                return;
+            }
+            app = {
+                ...localApp,
+                createdAt: new Date(localApp.createdAt),
+                updatedAt: new Date(localApp.updatedAt),
+            };
         }
-        if (!app) {
-            res.status(404).json({
-                success: false,
-                error: `App "${slug}" not found`,
-            });
-            return;
+        // Provision dynamic tables for all entities in the config
+        const tableResults = [];
+        for (const entity of config.entities) {
+            try {
+                await createDynamicTable(entity);
+                tableResults.push({ entity: entity.name, status: "created" });
+            }
+            catch {
+                tableResults.push({ entity: entity.name, status: "skipped" });
+            }
         }
-        const { config, warnings } = parseConfigFromObject(app.config);
+        // Rebuild and update the runtime router
+        try {
+            const router = buildRuntimeRouter(config, slug);
+            runtimeRouters.set(slug, router);
+        }
+        catch (routerError) {
+            console.error(`[PUT /api/config/:slug] Failed to rebuild runtime router for ${slug}:`, routerError);
+        }
         res.status(200).json({
             success: true,
             data: {
-                ...app,
-                config,
+                app,
                 warnings,
+                tables: tableResults,
+                routes: getRoutesSummary(config),
             },
         });
     }
     catch (err) {
         const message = err instanceof Error
             ? err.message
-            : "Failed to fetch app";
+            : "Failed to update app";
         res.status(500).json({
             success: false,
             error: message,

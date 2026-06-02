@@ -10,6 +10,7 @@ import {
   deleteLocalApp,
   findLocalAppBySlug,
   findLocalAppsByOwnerId,
+  updateLocalApp,
 } from "../core/config/localAppStore.js";
 import { authenticate, requireRole } from "../middleware/auth.middleware.js";
 import { validateBody } from "../middleware/validate.middleware.js";
@@ -250,66 +251,116 @@ router.get("/:slug", async (req: Request, res: Response) => {
 });
 
 // ── PUT /api/config/:slug — update an app's config ───────────
-router.get("/:slug", async (req: Request, res: Response) => {
-  const slug = Array.isArray(req.params.slug)
-    ? req.params.slug[0]
-    : req.params.slug;
+router.put(
+  "/:slug",
+  validateBody(UpdateConfigSchema),
+  async (req: Request, res: Response) => {
+    const slug = Array.isArray(req.params.slug)
+      ? req.params.slug[0]
+      : req.params.slug;
 
-  if (!slug) {
-    res.status(400).json({
-      success: false,
-      error: "Slug is required",
-    });
-    return;
-  }
-
-  try {
-    let app;
-
-    try {
-      app = await prisma.app.findUnique({
-        where: { slug },
-      });
-    } catch (dbError) {
-      if (process.env.NODE_ENV === "production") {
-        throw dbError;
-      }
-
-      app = await findLocalAppBySlug(slug);
-    }
-
-    if (!app) {
-      res.status(404).json({
+    if (!slug) {
+      res.status(400).json({
         success: false,
-        error: `App "${slug}" not found`,
+        error: "Slug is required",
       });
-
       return;
     }
 
-    const { config, warnings } =
-      parseConfigFromObject(app.config);
+    const { config: rawConfig } = req.body;
 
-    res.status(200).json({
-      success: true,
-      data: {
-        ...app,
-        config,
-        warnings,
-      },
-    });
-  } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to fetch app";
+    try {
+      // Validate and repair the config
+      const { config, warnings } = parseConfigFromObject(rawConfig);
 
-    res.status(500).json({
-      success: false,
-      error: message,
-    });
+      let app: {
+        id: string;
+        slug: string;
+        name: string;
+        config: unknown;
+        ownerId: string;
+        createdAt: Date;
+        updatedAt: Date;
+      };
+
+      try {
+        app = (await prisma.app.update({
+          where: { slug },
+          data: {
+            config: config as any,
+          },
+        })) as {
+          id: string;
+          slug: string;
+          name: string;
+          config: unknown;
+          ownerId: string;
+          createdAt: Date;
+          updatedAt: Date;
+        };
+      } catch (dbError) {
+        if (process.env.NODE_ENV === "production") {
+          throw dbError;
+        }
+
+        const localApp = await updateLocalApp(slug, { config });
+        if (!localApp) {
+          res.status(404).json({
+            success: false,
+            error: `App "${slug}" not found`,
+          });
+          return;
+        }
+
+        app = {
+          ...localApp,
+          createdAt: new Date(localApp.createdAt),
+          updatedAt: new Date(localApp.updatedAt),
+        };
+      }
+
+      // Provision dynamic tables for all entities in the config
+      const tableResults: { entity: string; status: string }[] = [];
+
+      for (const entity of config.entities) {
+        try {
+          await createDynamicTable(entity);
+          tableResults.push({ entity: entity.name, status: "created" });
+        } catch {
+          tableResults.push({ entity: entity.name, status: "skipped" });
+        }
+      }
+
+      // Rebuild and update the runtime router
+      try {
+        const router = buildRuntimeRouter(config, slug);
+        runtimeRouters.set(slug, router);
+      } catch (routerError) {
+        console.error(`[PUT /api/config/:slug] Failed to rebuild runtime router for ${slug}:`, routerError);
+      }
+
+      res.status(200).json({
+        success: true,
+        data: {
+          app,
+          warnings,
+          tables: tableResults,
+          routes: getRoutesSummary(config),
+        },
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update app";
+
+      res.status(500).json({
+        success: false,
+        error: message,
+      });
+    }
   }
-});
+);
 
 // ── DELETE /api/config/:slug — delete an app ─────────────────
 router.delete(

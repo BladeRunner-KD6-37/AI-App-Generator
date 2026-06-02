@@ -57,3 +57,19 @@ export async function deleteLocalApp(slug) {
     await writeApps(nextApps);
     return true;
 }
+export async function updateLocalApp(slug, data) {
+    const apps = await readApps();
+    const index = apps.findIndex((app) => app.slug === slug);
+    if (index === -1) {
+        return null;
+    }
+    const now = new Date().toISOString();
+    apps[index] = {
+        ...apps[index],
+        name: data.name ?? apps[index].name,
+        config: data.config,
+        updatedAt: now,
+    };
+    await writeApps(apps);
+    return apps[index];
+}

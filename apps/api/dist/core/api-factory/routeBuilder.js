@@ -30,7 +30,7 @@ export function getRoutesSummary(config) {
     if (!config.entities)
         return [];
     return config.entities.flatMap((entity) => {
-        const base = `/api/runtime/${entity.name.toLowerCase()}`;
+        const base = `/api/runtime/:slug/${entity.name.toLowerCase()}`;
         return [
             `GET    ${base}`,
             `GET    ${base}/:id`,

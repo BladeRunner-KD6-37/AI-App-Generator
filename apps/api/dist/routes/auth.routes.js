@@ -20,7 +20,7 @@ const RegisterSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     name: z.string().min(1, "Name is required").optional(),
-    profilePictureBase64: z.string().optional(),
+    profilePictureBase64: z.string().optional().nullable(),
 });
 const LoginSchema = z.object({
     email: z.string().email("Invalid email address"),
