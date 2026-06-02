@@ -1,0 +1,12 @@
+# Nixpacks configuration to build and deploy the Express API in a monorepo structure
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmd = "npm install"
+
+[phases.build]
+cmd = "node ./scripts/prisma-cleanup.js && npm --prefix apps/api run build"
+
+[start]
+cmd = "npm --prefix apps/api run start"
