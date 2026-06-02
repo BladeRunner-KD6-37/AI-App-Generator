@@ -21,7 +21,9 @@
     "zod": "^4.4.3",
     "zustand": "^5.0.14",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4"
+  },
+  "optionalDependencies": {
     "lightningcss-linux-x64-gnu": "^1.32.0",
     "lightningcss-win32-x64-msvc": "^1.32.0"
   },
