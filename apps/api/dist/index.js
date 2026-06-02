@@ -16,28 +16,35 @@ const app = express();
 let runtimeBootstrapped = false;
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-const rawFrontend = process.env.FRONTEND_URL || "http://localhost:3000";
-const allowedOrigins = rawFrontend.split(",").map((s) => s.trim());
-function isAllowedOrigin(origin) {
-    if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-        return true;
-    }
-    if (process.env.NODE_ENV !== "production") {
-        return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-    }
-    return false;
-}
+const rawFrontend = process.env.FRONTEND_URL ||
+    "https://ai-app-generator-n7bhh04ec-highoncaffienes-projects.vercel.app,http://localhost:3000";
+const allowedOrigins = rawFrontend
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin)
-            return callback(null, true);
-        if (isAllowedOrigin(origin)) {
+        // Allow Postman, server-to-server requests, health checks, etc.
+        if (!origin) {
             return callback(null, true);
         }
-        return callback(new Error("Not allowed by CORS"));
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        console.error(`[CORS] Blocked origin: ${origin}`);
+        console.error(`[CORS] Allowed origins: ${allowedOrigins.join(", ")}`);
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+    ],
 }));
+// Handle preflight requests
+app.options(/.*/, cors());
 // ── Serve static files for uploads ────────────────────────────
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 app.get("/health", (_req, res) => {
