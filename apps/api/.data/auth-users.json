@@ -14,5 +14,14 @@
     "password": "$2b$12$UZbzIBk1ywe4ozcPRGJhFOTL5BnW10wB3eDY0MXgHeZH5Pkugd6XO",
     "role": "user",
     "createdAt": "2026-05-30T13:26:31.742Z"
+  },
+  {
+    "id": "local-1780366023408-9rh6w1",
+    "email": "testing@gmail.com",
+    "name": "Ayush Kumar",
+    "password": "$2b$12$MmIO0ZsXbG6mEnEXa.Kdqeb6oiaWD.8bq83ZT0cu.qG5dZd8z89M.",
+    "profilePictureUrl": null,
+    "role": "user",
+    "createdAt": "2026-06-02T02:07:03.408Z"
   }
 ]
