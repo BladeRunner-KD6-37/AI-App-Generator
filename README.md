@@ -90,7 +90,7 @@ MetaRuntime implements a "graceful degradation" policy. A partially invalid conf
 1.  **Missing Fields**: Zod schema defaults automatically fill in skipped configuration values (e.g., `timestamps` defaults to `true`, `roles` lists default to `["user", "admin"]`).
 2.  **Invalid Data Types**: Unrecognized database types (e.g. `uuid`) are coerced to standard fallback types (e.g. `string`) with descriptive console warnings.
 3.  **Unknown Components**: Referencing an unregistered component type renders a clean frontend error placeholder rather than halting React lifecycle rendering.
-4.  **Database Connection Resiliency**: Setting `SKIP_RUNTIME_BOOTSTRAP=1` allows the Express API to start successfully in local development without active PostgreSQL connections, using local `.data/apps.json` as a mock storage fallback.
+4.  **Database Connection Resiliency**: The Express API continues serving authentication routes when PostgreSQL is unavailable, using the local `.data` stores as a fallback. Set `SKIP_RUNTIME_BOOTSTRAP=1` to skip loading runtime app configuration during local development. Configure `DATABASE_URL` in deployed environments for durable users and application data.
 
 ---
 

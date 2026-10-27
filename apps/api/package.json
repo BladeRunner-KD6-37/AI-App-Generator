@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "predev": "prisma generate --schema prisma/schema.prisma",
     "dev": "node --loader ts-node/esm src/index.ts",
     "build": "prisma generate --schema prisma/schema.prisma && tsc -p tsconfig.json",
     "start": "node dist/index.js",
@@ -24,10 +25,10 @@
     "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.9",
-    "ws": "^8.21.0",
-    "zod": "^4.4.3",
     "prisma": "^5.22.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "ws": "^8.21.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -37,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
     "@types/nodemailer": "^8.0.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   }
 }

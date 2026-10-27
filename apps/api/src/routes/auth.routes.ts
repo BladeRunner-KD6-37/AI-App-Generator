@@ -116,9 +116,7 @@ router.post(
         });
         return;
       } catch (dbError) {
-        if (process.env.NODE_ENV === "production") {
-          throw dbError;
-        }
+        console.warn("Database unavailable during registration; using local auth store:", dbError);
 
         const existingLocal = await findLocalUserByEmail(email);
         if (existingLocal) {
@@ -212,9 +210,7 @@ router.post(
         });
         return;
       } catch (dbError) {
-        if (process.env.NODE_ENV === "production") {
-          throw dbError;
-        }
+        console.warn("Database unavailable during login; using local auth store:", dbError);
 
         const localUser = await findLocalUserByEmail(email);
         if (!localUser) {
@@ -273,9 +269,7 @@ router.get("/me", authenticate, async (req: Request, res: Response) => {
       res.status(200).json({ success: true, data: user });
       return;
     } catch (dbError) {
-      if (process.env.NODE_ENV === "production") {
-        throw dbError;
-      }
+      console.warn("Database unavailable while loading user; using local auth store:", dbError);
 
       const localUser = await findLocalUserById(req.user!.id);
       if (!localUser) {

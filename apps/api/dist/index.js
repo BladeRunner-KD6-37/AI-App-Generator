@@ -69,12 +69,14 @@ export async function bootstrapRuntime() {
             runtimeRouters.set(appRecord.slug, router);
         }
         console.log(`[Startup] Loaded ${apps.length} app(s) from the database`);
-        runtimeBootstrapped = true;
     }
     catch (error) {
-        console.error("Failed to bootstrap runtime:", error);
-        throw error;
+        // Authentication can use the local store when PostgreSQL is unavailable.
+        // Do not prevent the API from serving those routes just because runtime
+        // app configuration could not be loaded.
+        console.error("Failed to bootstrap runtime; continuing without database apps:", error);
     }
+    runtimeBootstrapped = true;
 }
 async function startServer() {
     try {
