@@ -2,19 +2,13 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
-import fs from "fs";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import prisma from "../core/db/prisma.js";
 import { getJwtSecret } from "../core/auth/jwt.js";
 import { createLocalUser, findLocalUserByEmail, findLocalUserById, } from "../core/auth/localAuthStore.js";
 import { validateBody } from "../middleware/validate.middleware.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 const router = Router();
-// ── Ensure upload directory exists ───────────────────────────
-const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
 // ── Validation schemas ────────────────────────────────────────
 const RegisterSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -31,21 +25,81 @@ function generateToken(user) {
     const secret = getJwtSecret();
     return jwt.sign({ id: user.id, email: user.email, role: user.role }, secret, { expiresIn: "7d" });
 }
+const MAX_PROFILE_PICTURE_BYTES = 5 * 1024 * 1024;
+const PROFILE_PICTURE_DATA_URI = /^data:(image\/(?:jpeg|png|gif|webp));base64,(.*)$/is;
+function detectImageMimeType(buffer) {
+    if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+        return "image/jpeg";
+    }
+    if (buffer.length >= 8 &&
+        buffer[0] === 0x89 &&
+        buffer[1] === 0x50 &&
+        buffer[2] === 0x4e &&
+        buffer[3] === 0x47 &&
+        buffer[4] === 0x0d &&
+        buffer[5] === 0x0a &&
+        buffer[6] === 0x1a &&
+        buffer[7] === 0x0a) {
+        return "image/png";
+    }
+    if (buffer.length >= 6 && (buffer.subarray(0, 6).toString("ascii") === "GIF87a" || buffer.subarray(0, 6).toString("ascii") === "GIF89a")) {
+        return "image/gif";
+    }
+    if (buffer.length >= 12 &&
+        buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+        buffer.subarray(8, 12).toString("ascii") === "WEBP") {
+        return "image/webp";
+    }
+    return null;
+}
 // ── Helper to save profile picture ─────────────────────────────
 async function saveProfilePicture(base64String, userId) {
     try {
         if (!base64String || base64String.length === 0) {
             return null;
         }
-        // Remove data URI prefix if present
-        const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
-        const filename = `${userId}-${Date.now()}.jpg`;
-        const filepath = path.join(uploadDir, filename);
-        fs.writeFileSync(filepath, Buffer.from(base64Data, "base64"));
-        return `/uploads/profiles/${filename}`;
+        const trimmedInput = base64String.trim();
+        const dataUriMatch = PROFILE_PICTURE_DATA_URI.exec(trimmedInput);
+        const declaredMimeType = dataUriMatch?.[1].toLowerCase();
+        const base64Data = (dataUriMatch?.[2] ?? trimmedInput).replace(/\s/g, "");
+        if (!base64Data ||
+            base64Data.length % 4 === 1 ||
+            !/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
+            console.warn("Rejected profile picture: invalid base64 data");
+            return null;
+        }
+        const imageBuffer = Buffer.from(base64Data, "base64");
+        const detectedMimeType = detectImageMimeType(imageBuffer);
+        if (!detectedMimeType ||
+            (declaredMimeType && declaredMimeType !== detectedMimeType) ||
+            imageBuffer.length > MAX_PROFILE_PICTURE_BYTES) {
+            console.warn("Rejected profile picture: unsupported format or size");
+            return null;
+        }
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+        if (!cloudName || !apiKey || !apiSecret) {
+            console.error("Profile picture upload is unavailable: Cloudinary environment variables are missing");
+            return null;
+        }
+        cloudinary.config({
+            cloud_name: cloudName,
+            api_key: apiKey,
+            api_secret: apiSecret,
+        });
+        const result = await cloudinary.uploader.upload(`data:${detectedMimeType};base64,${base64Data}`, {
+            folder: "profile-pictures",
+            public_id: `${userId}-${Date.now()}`,
+            resource_type: "image",
+            overwrite: false,
+        });
+        return typeof result.secure_url === "string" && result.secure_url.startsWith("https://")
+            ? result.secure_url
+            : null;
     }
     catch (err) {
-        console.error("Failed to save profile picture:", err);
+        console.error("Failed to upload profile picture to Cloudinary:", err instanceof Error ? err.message : "unknown error");
         return null;
     }
 }
@@ -159,6 +213,7 @@ router.post("/login", validateBody(LoginSchema), async (req, res) => {
                         id: user.id,
                         email: user.email,
                         name: user.name,
+                        profilePictureUrl: user.profilePictureUrl,
                         role: user.role,
                     },
                     token,
@@ -192,6 +247,7 @@ router.post("/login", validateBody(LoginSchema), async (req, res) => {
                         id: localUser.id,
                         email: localUser.email,
                         name: localUser.name,
+                        profilePictureUrl: localUser.profilePictureUrl,
                         role: localUser.role,
                     },
                     token,

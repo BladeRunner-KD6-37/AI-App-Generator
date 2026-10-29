@@ -92,6 +92,20 @@ MetaRuntime implements a "graceful degradation" policy. A partially invalid conf
 3.  **Unknown Components**: Referencing an unregistered component type renders a clean frontend error placeholder rather than halting React lifecycle rendering.
 4.  **Database Connection Resiliency**: The Express API continues serving authentication routes when PostgreSQL is unavailable, using the local `.data` stores as a fallback. Set `SKIP_RUNTIME_BOOTSTRAP=1` to skip loading runtime app configuration during local development. Configure `DATABASE_URL` in deployed environments for durable users and application data.
 
+## 🚀 Vercel API Configuration
+
+When deploying the backend with `apps/api` as the Vercel project root, use the Node.js runtime and the included `api/[...path].ts` entry point. The API build runs `prisma generate` before compiling `src` to `dist`.
+
+Configure these server-side environment variables in Vercel:
+
+* `DATABASE_URL` — Neon pooled connection string.
+* `DIRECT_URL` — Neon direct connection string used by Prisma migrations and tooling.
+* `JWT_SECRET` — secret used to sign authentication tokens.
+* `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Cloudinary credentials used for persistent profile-picture uploads.
+* `FRONTEND_URL` — comma-separated list of allowed frontend origins.
+
+Profile pictures are uploaded from the API to Cloudinary and the returned HTTPS URL is stored in `User.profilePictureUrl`. The Vercel deployment filesystem is not used for uploads.
+
 ---
 
 ## 📝 Configuration Schema Example

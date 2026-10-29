@@ -4,7 +4,6 @@ dotenv.config();
 
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import path from "path";
 import authRouter from "./routes/auth.routes.js";
 import configRouter, { runtimeRouters } from "./routes/config.routes.js";
 import runtimeRouter from "./routes/runtime.routes.js";
@@ -63,9 +62,6 @@ app.use(
 
 // Handle preflight requests
 app.options(/.*/, cors());
-
-// ── Serve static files for uploads ────────────────────────────
-app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
