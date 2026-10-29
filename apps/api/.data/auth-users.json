@@ -41,5 +41,14 @@
     "profilePictureUrl": null,
     "role": "user",
     "createdAt": "2026-10-29T07:30:24.417Z"
+  },
+  {
+    "id": "local-1793286611195-4hezw4",
+    "email": "testing5221@gmail.com",
+    "name": "testsubject",
+    "password": "$2b$12$hznNQWcqxVmq5UL85Y4y/uenCPm7sCTMWcVwaUj//Wr6wGwTDcHLW",
+    "profilePictureUrl": null,
+    "role": "user",
+    "createdAt": "2026-10-29T15:10:11.195Z"
   }
 ]

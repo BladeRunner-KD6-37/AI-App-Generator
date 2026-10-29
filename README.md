@@ -212,3 +212,15 @@ The application features a `nixpacks.toml` file optimized for platforms like **R
     ```bash
     npm --prefix apps/api run start
     ```
+
+The Nixpacks configuration expects the deployment working directory to be
+`apps/api`, so it uses the package-local commands:
+
+```bash
+npm run build
+npm run start
+```
+
+The API's [`apps/api/vercel.json`](./apps/api/vercel.json) uses the same
+package-local build command for Vercel. For a repository-root local shell, the
+root `prebuild` script remains available and delegates to `apps/api`.
