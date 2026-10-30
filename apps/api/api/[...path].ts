@@ -4,11 +4,14 @@ import { app, bootstrapRuntime } from "../dist/index.js";
 let bootstrapPromise: Promise<void> | null = null;
 
 async function ensureBootstrapped(): Promise<void> {
-  if (!bootstrapPromise) {
-    bootstrapPromise = bootstrapRuntime();
+  const existingPromise = bootstrapPromise;
+  if (existingPromise) {
+    return existingPromise;
   }
 
-  return bootstrapPromise;
+  const newPromise = bootstrapRuntime();
+  bootstrapPromise = newPromise;
+  return newPromise;
 }
 
 export default async function handler(
